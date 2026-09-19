@@ -1,0 +1,35 @@
+name: ChatGPT Test Action
+
+on:
+  workflow_dispatch:
+
+jobs:
+  run-chatgpt:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install OpenAI
+        run: pip install openai
+
+      - name: Ask ChatGPT
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          python -c "
+          import os
+          from openai import OpenAI
+          client = OpenAI(api_key=os.environ.get('OPENAI_API_KEY'))
+          response = client.chat.completions.create(
+              model='gpt-4o-mini',
+              messages=[{'role': 'user', 'content': 'مرحباً، هل تعمل الأتمتة بنجاح؟'}]
+          )
+          print('رد الذكاء الاصطناعي:')
+          print(response.choices[0].message.content)
+          "
