@@ -19,13 +19,11 @@ jobs:
         run: pip install openai
 
       - name: Ask ChatGPT
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
           python -c "
           import os
           from openai import OpenAI
-          client = OpenAI(api_key=os.environ.get('OPENAI_API_KEY'))
+          client = OpenAI(api_key='${{ secrets.OPENAI_API_KEY }}')
           response = client.chat.completions.create(
               model='gpt-4o-mini',
               messages=[{'role': 'user', 'content': 'مرحباً، هل تعمل الأتمتة بنجاح؟'}]
