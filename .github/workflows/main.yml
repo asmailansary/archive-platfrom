@@ -3,6 +3,8 @@ name: AFAS AI Auto-Developer
 on:
   issues:
     types: [opened, edited]
+  issue_comment:
+    types: [created]
   workflow_dispatch:
 
 jobs:
@@ -28,7 +30,7 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           ISSUE_BODY: ${{ github.event.issue.body }}
         run: |
-          python -c "
+          python - <<EOF
           import os
           import json
           from openai import OpenAI
@@ -36,12 +38,11 @@ jobs:
           client = OpenAI(api_key=os.environ['OPENAI_API_KEY'])
           issue_content = os.environ.get('ISSUE_BODY', '')
           
-          # توجيه صارم للذكاء الاصطناعي عشان يرجع كود فقط قابل للتنفيذ
           system_prompt = '''أنت مبرمج ذكاء اصطناعي تدير مستودع منصة AFAS.
           بناءً على طلب المستخدم، قم بكتابة أو تحديث الأكواد المطلوبة.
           هام جداً: يجب أن يكون ردك عبارة عن JSON فقط (بدون أي شروحات، أو مقدمات، أو نصوص خارج الـ JSON).
           الـ JSON يجب أن يكون مصفوفة (Array) تحتوي على الكائنات التالية:
-          [{\"file_path\": \"index.html\", \"content\": \"الكود الكامل للملف هنا\"}]
+          [{"file_path": "index.html", "content": "الكود الكامل للملف هنا"}]
           تأكد من كتابة الكود كاملاً للملفات المطلوبة لتعمل المنصة بشكل صحيح.
           '''
           
@@ -57,10 +58,9 @@ jobs:
               
               ai_response = response.choices[0].message.content.strip()
               
-              # تنظيف الرد تحسباً لأي علامات Markdown إضافية
-              if ai_response.startswith('```json'):
+              if ai_response.startswith('\`\`\`json'):
                   ai_response = ai_response[7:-3].strip()
-              elif ai_response.startswith('```'):
+              elif ai_response.startswith('\`\`\`'):
                   ai_response = ai_response[3:-3].strip()
               
               files_to_update = json.loads(ai_response)
@@ -69,15 +69,14 @@ jobs:
                   path = file_obj['file_path']
                   content = file_obj['content']
                   
-                  # إنشاء المجلدات لو الملف يحتاج مجلد جديد
                   os.makedirs(os.path.dirname(path) if os.path.dirname(path) else '.', exist_ok=True)
                   
                   with open(path, 'w', encoding='utf-8') as f:
                       f.write(content)
-                  print(f'تم تحديث/إنشاء الملف بنجاح: {path}')
+                  print(f'تم تحديث الملف بنجاح: ' + path)
           except Exception as e:
               print('حدث خطأ أثناء معالجة رد الذكاء الاصطناعي:', e)
-          "
+          EOF
           
       - name: Commit and Push Changes
         run: |
@@ -85,11 +84,10 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add .
           
-          # التأكد إن فيه تعديلات فعلية صارت قبل الرفع
           if git diff --staged --quiet; then
             echo "لا توجد تعديلات جديدة لرفعها."
           else
-            git commit -m "تحديث تلقائي من الذكاء الاصطناعي بناءً على Issue #${{ github.event.issue.number }}"
+            git commit -m "تحديث تلقائي من الذكاء الاصطناعي بناءً على الطلب"
             git push
             echo "تم رفع التعديلات للمستودع بنجاح!"
           fi
