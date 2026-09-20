@@ -1,45 +1,619 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>French Archives of the Ansar Tribe in French Sudan</title>
-    <link rel="stylesheet" href="styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/esm/index.js"></script>
-</head>
-<body>
-    <header>
-        <h1>French Archives of the Ansar Tribe in French Sudan (AFAS)</h1>
-    </header>
-    <main>
-        <section id="documents">
-            <h2>Documents</h2>
-            <div id="document-viewer"></div>
-            <div id="search-engine">
-                <input type="text" id="search-input" placeholder="Search...">
-                <button id="search-button">Search</button>
-            </div>
-        </section>
-    </main>
-    <footer>
-        <p>&copy; 2023 French Archives of the Ansar Tribe in French Sudan</p>
-    </footer>
-    <script>
-        const SUPABASE_URL = "your_supabase_url";
-        const SUPABASE_ANON_KEY = "your_supabase_anon_key";
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-        async function fetchDocuments() {
-            const { data, error } = await supabase
-                .from('articles')
-                .select('*');
-
-            if (error) console.error('Error fetching documents:', error);
-            else console.log('Documents:', data);
+    <title>منصة AFAS - الأرشيف الفرنسي لقبيلة الأنصار</title>
+    <!-- خطوط عربية فخمة -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <!-- FontAwesome للايقونات -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-charcoal: #090808;
+            --card-bg: #121011;
+            --burgundy: #4B101D;
+            --burgundy-light: #6a182a;
+            --gold: #B99650;
+            --gold-hover: #d4af63;
+            --text-light: #f3f3f3;
+            --text-muted: #a0a0a0;
+            --border-color: rgba(185, 150, 80, 0.25);
         }
 
-        document.getElementById('search-button').addEventListener('click', fetchDocuments);
-        fetchDocuments();
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Tajawal', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-charcoal);
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.6;
+        }
+
+        /* الهيدر وشريط التنقل */
+        header {
+            background: linear-gradient(180deg, rgba(75, 16, 29, 0.6) 0%, rgba(9, 8, 8, 0.95) 100%);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-container {
+            max-width: 1300px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-badge {
+            background-color: var(--burgundy);
+            color: var(--gold);
+            border: 1px solid var(--gold);
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Amiri', serif;
+            font-weight: bold;
+            font-size: 1.4rem;
+            border-radius: 6px;
+            box-shadow: 0 0 15px rgba(75, 16, 29, 0.5);
+        }
+
+        .brand-title h1 {
+            font-size: 1.2rem;
+            color: var(--gold);
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .brand-title p {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 0.6rem 1.2rem;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .btn-gold {
+            background: linear-gradient(135deg, var(--gold) 0%, #8c6e33 100%);
+            color: #000;
+            border: none;
+        }
+
+        .btn-gold:hover {
+            background: linear-gradient(135deg, var(--gold-hover) 0%, var(--gold) 100%);
+            box-shadow: 0 0 12px rgba(185, 150, 80, 0.4);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--gold);
+            border: 1px solid var(--gold);
+        }
+
+        .btn-outline:hover {
+            background: rgba(185, 150, 80, 0.1);
+        }
+
+        /* قسم الواجهة الرئيسية (Hero Section) */
+        .hero {
+            padding: 3.5rem 1.5rem;
+            text-align: center;
+            background: radial-gradient(circle at center, rgba(75, 16, 29, 0.25) 0%, transparent 70%);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .hero h2 {
+            font-family: 'Amiri', serif;
+            font-size: 2.5rem;
+            color: var(--gold);
+            margin-bottom: 1rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+        }
+
+        .hero p {
+            max-width: 750px;
+            margin: 0 auto 2rem auto;
+            color: var(--text-muted);
+            font-size: 1.05rem;
+        }
+
+        /* صندوق البحث والفلاتر */
+        .search-box {
+            max-width: 650px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 1rem 1.2rem 1rem 3rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background-color: rgba(18, 16, 17, 0.9);
+            color: #fff;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .search-box input:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 15px rgba(185, 150, 80, 0.2);
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 1.2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gold);
+            font-size: 1.2rem;
+        }
+
+        /* الإحصائيات السريعة */
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 2.5rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .stat-item span {
+            color: var(--gold);
+            font-weight: bold;
+        }
+
+        /* شبكة الوثائق والأرشيف */
+        .main-container {
+            max-width: 1300px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+            flex: 1;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding-bottom: 0.8rem;
+        }
+
+        .section-title {
+            font-family: 'Amiri', serif;
+            font-size: 1.6rem;
+            color: var(--gold);
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .tab {
+            padding: 0.4rem 0.9rem;
+            border-radius: 4px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        .tab.active, .tab:hover {
+            border-color: var(--gold);
+            color: var(--gold);
+            background: rgba(185, 150, 80, 0.05);
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+
+        /* كارت الوثيقة */
+        .doc-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .doc-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(75, 16, 29, 0.4);
+            border-color: var(--gold);
+        }
+
+        .doc-preview {
+            height: 180px;
+            background-color: #000;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 1px solid var(--border-color);
+            background-size: cover;
+            background-position: center;
+        }
+
+        .doc-type-tag {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: var(--burgundy);
+            color: var(--gold);
+            font-size: 0.75rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            border: 1px solid var(--gold);
+            font-weight: bold;
+        }
+
+        .doc-body {
+            padding: 1.2rem;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .doc-title {
+            font-size: 1.1rem;
+            color: var(--text-light);
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        .doc-meta {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 0.8rem;
+            display: flex;
+            gap: 1rem;
+        }
+
+        .doc-desc {
+            font-size: 0.85rem;
+            color: #ccc;
+            margin-bottom: 1.2rem;
+            flex: 1;
+        }
+
+        .doc-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            padding-top: 0.8rem;
+        }
+
+        .status-badge {
+            font-size: 0.75rem;
+            color: #4cd137;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        /* نافذة تسجيل الدخول للأدمن (Modal) */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--gold);
+            border-radius: 10px;
+            width: 100%;
+            max-width: 400px;
+            padding: 2rem;
+            box-shadow: 0 0 30px rgba(75, 16, 29, 0.7);
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+
+        .modal-title {
+            font-family: 'Amiri', serif;
+            color: var(--gold);
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 0.4rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.8rem;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background-color: rgba(0, 0, 0, 0.5);
+            color: #fff;
+            outline: none;
+        }
+
+        .form-group input:focus {
+            border-color: var(--gold);
+        }
+
+        /* الفوتر */
+        footer {
+            background-color: #050404;
+            border-top: 1px solid var(--border-color);
+            padding: 2rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-top: 3rem;
+        }
+
+        footer p span {
+            color: var(--gold);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- الهيدر العلوي -->
+    <header>
+        <div class="nav-container">
+            <div class="logo-area">
+                <div class="logo-badge">أنصار</div>
+                <div class="brand-title">
+                    <h1>منصة AFAS التاريخية</h1>
+                    <p>الأرشيف الفرنسي لقبيلة الأنصار في السودان الفرنسي</p>
+                </div>
+            </div>
+            <div class="nav-actions">
+                <button class="btn btn-outline" onclick="openLoginModal()">
+                    <i class="fa-solid fa-lock">
+                    </i> لوحة الإدارة
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- الواجهة الرئيسية والبحث -->
+    <section class="hero">
+        <h2>الأرشيف الرقمي والتوثيق التاريخي</h2>
+        <p>منصة أرشيفية متخصصة لتجميع، ترجمة، وفهرسة الوثائق والمراسلات التاريخية الفرنسية المتعلقة بقبيلة الأنصار، بدعم الذكاء الاصطناعي وقواعد البيانات المتقدمة.</p>
+        
+        <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="searchInput" placeholder="ابحث عن وثيقة، تاريخ، اسم شخصية، أو رقم المخطوطة..." onkeyup="filterDocs()">
+        </div>
+
+        <div class="stats-bar">
+            <div class="stat-item"><i class="fa-solid fa-file-contract"></i> الوثائق الموثقة: <span>142</span></div>
+            <div class="stat-item"><i class="fa-solid fa-language"></i> النصوص المترجمة: <span>98</span></div>
+            <div class="stat-item"><i class="fa-solid fa-database"></i> قاعدة البيانات: <span>Supabase Active</span></div>
+        </div>
+    </section>
+
+    <!-- المحتوى الرئيسي للمستندات -->
+    <main class="main-container">
+        <div class="section-header">
+            <div class="section-title">
+                <i class="fa-solid fa-box-archive"></i>
+                سجلات الأرشيف المتاحة
+            </div>
+            <div class="filter-tabs">
+                <button class="tab active">الكل</button>
+                <button class="tab">المراسلات الرسمية</button>
+                <button class="tab">المعاهدات</button>
+                <button class="tab">المخطوطات</button>
+            </div>
+        </div>
+
+        <div class="grid-container" id="docsGrid">
+            <!-- كارت 1 -->
+            <div class="doc-card">
+                <div class="doc-preview" style="background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.8)), url('https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80');">
+                    <span class="doc-type-tag">مراسلة رسمية</span>
+                </div>
+                <div class="doc-body">
+                    <h3 class="doc-title">تقرير الحاكم الفرنسي حول منطقة تمبكتو</h3>
+                    <div class="doc-meta">
+                        <span><i class="fa-regular fa-calendar"></i> 1894 م</span>
+                        <span><i class="fa-solid fa-code-branch"></i> Ref: AFAS-FR-102</span>
+                    </div>
+                    <p class="doc-desc">وثيقة رسمية تتضمن تفاصيل الاتصالات الأولية مع أعيان الأنصار والترتيبات الإدارية في المنطقة.</p>
+                    <div class="doc-footer">
+                        <span class="status-badge"><i class="fa-solid fa-check-circle"></i> مترجم بالكامل</span>
+                        <button class="btn btn-gold" onclick="viewDoc('AFAS-FR-102')">معاينة</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- كارت 2 -->
+            <div class="doc-card">
+                <div class="doc-preview" style="background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.8)), url('https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=600&q=80');">
+                    <span class="doc-type-tag">مخطوط تاريخي</span>
+                </div>
+                <div class="doc-body">
+                    <h3 class="doc-title">سجل الأنساب والتحالفات القبائلية</h3>
+                    <div class="doc-meta">
+                        <span><i class="fa-regular fa-calendar"></i> 1902 م</span>
+                        <span><i class="fa-solid fa-code-branch"></i> Ref: AFAS-MS-044</span>
+                    </div>
+                    <p class="doc-desc">مخطوط نادر يوثق الفروع والتحالفات الاجتماعية للأنصار في أقاليم السودان الفرنسي.</p>
+                    <div class="doc-footer">
+                        <span class="status-badge"><i class="fa-solid fa-check-circle"></i> معالج بـ OCR</span>
+                        <button class="btn btn-gold" onclick="viewDoc('AFAS-MS-044')">معاينة</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- كارت 3 -->
+            <div class="doc-card">
+                <div class="doc-preview" style="background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.8)), url('https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=600&q=80');">
+                    <span class="doc-type-tag">معاهدة</span>
+                </div>
+                <div class="doc-body">
+                    <h3 class="doc-title">اتفاقية الحدود وتأمين الطرق التجارية</h3>
+                    <div class="doc-meta">
+                        <span><i class="fa-regular fa-calendar"></i> 1911 م</span>
+                        <span><i class="fa-solid fa-code-branch"></i> Ref: AFAS-TR-009</span>
+                    </div>
+                    <p class="doc-desc">نص الاتفاقية المحررة بين السلطات الفرنسية وشيوخ قبيلة الأنصار لحماية القوافل.</p>
+                    <div class="doc-footer">
+                        <span class="status-badge"><i class="fa-solid fa-check-circle"></i> مؤرشف ومفهرس</span>
+                        <button class="btn btn-gold" onclick="viewDoc('AFAS-TR-009')">معاينة</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- مودال تسجيل الدخول للأدمن -->
+    <div class="modal-overlay" id="loginModal">
+        <div class="modal-card">
+            <i class="fa-solid fa-xmark modal-close" onclick="closeLoginModal()"></i>
+            <h3 class="modal-title">تسجيل دخول الإدارة</h3>
+            <form onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label>اسم المستخدم / ID</label>
+                    <input type="text" id="adminUser" placeholder="أدخل اسم المستخدم" required>
+                </div>
+                <div class="form-group">
+                    <label>كلمة المرور</label>
+                    <input type="password" id="adminPass" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn btn-gold" style="width: 100%; justify-content: center; margin-top: 1rem;">دخول النظام</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- الفوتر -->
+    <footer>
+        <p>جميع الحقوق محفوظة &copy; 2026 <span>منصة AFAS - الأرشيف الفرنسي لقبيلة الأنصار</span></p>
+        <p style="margin-top: 0.5rem; opacity: 0.5; font-size: 0.75rem;">تطوير مؤتمت بدعم Supabase & GitHub Pages</p>
+    </footer>
+
+    <!-- سكريبت التفاعلات -->
+    <script>
+        function openLoginModal() {
+            document.getElementById('loginModal').style.display = 'flex';
+        }
+
+        function closeLoginModal() {
+            document.getElementById('loginModal').style.display = 'none';
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const user = document.getElementById('adminUser').value;
+            const pass = document.getElementById('adminPass').value;
+
+            // التحقق المعتمد للإدارة
+            if(user === 'ismail212@7' && pass === '1231230001ansar') {
+                alert('تم تسجيل الدخول بنجاح! مرحباً بك في لوحة تحكم AFAS.');
+                closeLoginModal();
+            } else {
+                alert('بيانات الدخول غير صحيحة!');
+            }
+        }
+
+        function viewDoc(ref) {
+            alert('جاري تحميل الوثيقة ' + ref + ' من قاعدة بيانات Supabase...');
+        }
+
+        function filterDocs() {
+            let input = document.getElementById('searchInput').value.toLowerCase();
+            let cards = document.getElementsByClassName('doc-card');
+
+            for (let i = 0; i < cards.length; i++) {
+                let title = cards[i].querySelector('.doc-title').innerText.toLowerCase();
+                let desc = cards[i].querySelector('.doc-desc').innerText.toLowerCase();
+                if (title.includes(input) || desc.includes(input)) {
+                    cards[i].style.display = "";
+                } else {
+                    cards[i].style.display = "none";
+                }
+            }
+        }
     </script>
 </body>
 </html>
