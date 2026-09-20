@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="scroll-smooth">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لوحة التحكم - أرشيف أنصار فرنسا (AFAS)</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        colors: {
+          archive: {
+            50: '#fdfbf7', 100: '#f7f2e7', 200: '#ede0ca', 300: '#dfc8a3',
+            400: '#ceab77', 500: '#bf9053', 600: '#aa7843', 700: '#8c5e38',
+            800: '#734d33', 900: '#5f402d',
+          }
+        },
+        fontFamily: { tajawal: ['Tajawal', 'sans-serif'] }
+      }
+    }
+  }
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../supabase-client.js"></script>
+<style>
+  body { font-family: 'Tajawal', sans-serif; }
+  .card { background: white; border-radius: 1.25rem; border: 1px solid #ede0ca; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+  .btn-primary { background:#aa7843; color:#fff; padding:.65rem 1.5rem; border-radius:.9rem; font-weight:700; font-size:.85rem; }
+  .btn-primary:hover { background:#8c5e38; }
+  .btn-ghost { background:#f7f2e7; color:#734d33; padding:.65rem 1.5rem; border-radius:.9rem; font-weight:700; font-size:.85rem; }
+  .btn-ghost:hover { background:#ede0ca; }
+  .input { width:100%; padding:.75rem 1rem; border-radius:.75rem; border:1px solid #ede0ca; font-size:.9rem; }
+  .badge { padding:.2rem .7rem; border-radius:9999px; font-size:.7rem; font-weight:700; }
+  .badge-pending { background:#fef3c7; color:#92400e; }
+  .badge-approved { background:#d1fae5; color:#065f46; }
+  .badge-rejected, .badge-suspended { background:#fee2e2; color:#991b1b; }
+  .hidden-view { display:none; }
+</style>
+</head>
+<body class="bg-archive-50 text-slate-800 min-h-screen flex flex-col">
+
+<header class="border-b border-archive-200/60 bg-white/80 backdrop-blur-md py-4">
+  <div class="max-w-5xl mx-auto px-4 flex items-center justify-between">
+    <div>
+      <h1 class="text-lg font-bold text-archive-800">لوحة تحكم الأرشيف <span class="text-archive-500">(AFAS)</span></h1>
+      <p class="text-xs text-slate-500">دخول المسؤولين والمحررين المعتمدين</p>
+    </div>
+    <a href="../index.html" class="text-xs font-semibold text-archive-600 hover:underline">عودة للموقع الرئيسي</a>
+  </div>
+</header>
+
+<main class="flex-grow max-w-5xl w-full mx-auto px-4 py-10 space-y-6">
+
+  <!-- LOGIN VIEW -->
+  <div id="view-login" class="max-w-md mx-auto card p-8 space-y-5">
+    <h2 class="text-xl font-bold text-center text-archive-900">تسجيل الدخول</h2>
+    <div id="login-error" class="hidden-view text-xs text-red-600 bg-red-50 border border-red-200 rounded-xl p-3"></div>
+    <div class="space-y-3">
+      <input id="login-email" type="email" placeholder="البريد الإلكتروني" class="input">
+      <input id="login-password" type="password" placeholder="كلمة المرور" class="input">
+      <button onclick="handleLogin()" class="btn-primary w-full">دخول</button>
+      <button onclick="AFAS.signInWithGoogle()" class="btn-ghost w-full">الدخول عبر Google</button>
+    </div>
+    <hr class="border-archive-100">
+    <p class="text-xs text-slate-500 text-center">ليس لديك حساب؟</p>
+    <div class="space-y-3">
+      <input id="signup-email" type="email" placeholder="البريد الإلكتروني" class="input">
+      <input id="signup-password" type="password" placeholder="اختر كلمة مرور" class="input">
+      <button onclick="handleSignup()" class="btn-ghost w-full">إنشاء حساب جديد</button>
+    </div>
+  </div>
+
+  <!-- LOGGED-IN SHELL -->
+  <div id="view-app" class="hidden-view space-y-6">
+    <div class="card p-5 flex items-center justify-between">
+      <div>
+        <p class="text-sm font-bold" id="me-email">-</p>
+        <span id="me-role" class="badge badge-approved">-</span>
+      </div>
+      <button onclick="handleLogout()" class="btn-ghost">تسجيل الخروج</button>
+    </div>
+
+    <!-- VIEWER: not yet an editor -->
+    <div id="view-viewer" class="hidden-view card p-8 text-center space-y-4">
+      <h3 class="font-bold text-lg">حساب زائر</h3>
+      <p class="text-sm text-slate-500">لا تملك صلاحية دخول لوحة التحكم بعد. يمكنك التقدم لتصبح محرراً معتمداً — سيراجع طلبك المسؤول الرئيسي.</p>
+      <button onclick="applyEditor()" class="btn-primary">التقدم كمحرر</button>
+    </div>
+
+    <!-- EDITOR: pending approval -->
+    <div id="view-pending" class="hidden-view card p-8 text-center space-y-2">
+      <h3 class="font-bold text-lg">طلبك قيد المراجعة</h3>
+      <p class="text-sm text-slate-500">تم إرسال طلبك للانضمام كمحرر معتمد. سيتم تفعيل حسابك بعد موافقة المسؤول الرئيسي.</p>
+    </div>
+
+    <!-- EDITOR: approved -->
+    <div id="view-editor" class="hidden-view card p-8 space-y-3">
+      <h3 class="font-bold text-lg">لوحة المحرر</h3>
+      <p class="text-sm text-slate-500">تم تفعيل صلاحيات التحرير الخاصة بك. أدوات إدارة الوثائق (إضافة/تعديل/إرسال للمراجعة) ستُضاف في المرحلة القادمة من التطوير.</p>
+    </div>
+
+    <!-- SUPER ADMIN -->
+    <div id="view-admin" class="hidden-view space-y-6">
+      <div class="card p-6 space-y-4">
+        <h3 class="font-bold text-lg">طلبات المحررين المعلّقة</h3>
+        <div id="pending-list" class="space-y-3 text-sm"></div>
+      </div>
+      <div class="card p-6 space-y-4">
+        <h3 class="font-bold text-lg">جميع المحررين والمسؤولين</h3>
+        <div id="editors-list" class="space-y-3 text-sm"></div>
+      </div>
+      <div class="card p-6 space-y-4">
+        <h3 class="font-bold text-lg">سجل المراجعة (Audit Log)</h3>
+        <div id="audit-list" class="space-y-2 text-xs max-h-96 overflow-y-auto"></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+function show(id) {
+  ['view-viewer','view-pending','view-editor','view-admin'].forEach(v => {
+    document.getElementById(v).classList.add('hidden-view');
+  });
+  document.getElementById(id).classList.remove('hidden-view');
+}
+
+function statusBadge(status) {
+  return `<span class="badge badge-${status}">${status}</span>`;
+}
+
+async function refreshApp() {
+  const profile = await AFAS.getMyProfile();
+  if (!profile) {
+    document.getElementById('view-login').classList.remove('hidden-view');
+    document.getElementById('view-app').classList.add('hidden-view');
+    return;
+  }
+  document.getElementById('view-login').classList.add('hidden-view');
+  document.getElementById('view-app').classList.remove('hidden-view');
+  document.getElementById('me-email').textContent = profile.email;
+  document.getElementById('me-role').textContent = `${profile.role} · ${profile.status}`;
+
+  if (profile.role === 'super_admin' && profile.status === 'approved') {
+    show('view-admin');
+    loadAdminData();
+  } else if (profile.role === 'editor' && profile.status === 'approved') {
+    show('view-editor');
+  } else if (profile.role === 'editor' && profile.status === 'pending') {
+    show('view-pending');
+  } else {
+    show('view-viewer');
+  }
+}
+
+async function handleLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  const { error } = await AFAS.signInWithEmail(email, password);
+  const errBox = document.getElementById('login-error');
+  if (error) {
+    errBox.textContent = 'فشل الدخول: تحقق من البريد وكلمة المرور';
+    errBox.classList.remove('hidden-view');
+    return;
+  }
+  errBox.classList.add('hidden-view');
+  refreshApp();
+}
+
+async function handleSignup() {
+  const email = document.getElementById('signup-email').value.trim();
+  const password = document.getElementById('signup-password').value;
+  const { error } = await AFAS.signUpWithEmail(email, password);
+  const errBox = document.getElementById('login-error');
+  if (error) {
+    errBox.textContent = 'تعذر إنشاء الحساب: ' + error.message;
+    errBox.classList.remove('hidden-view');
+    return;
+  }
+  errBox.textContent = 'تم إنشاء الحساب! تحقق من بريدك لتأكيده ثم سجّل الدخول.';
+  errBox.classList.remove('hidden-view');
+}
+
+async function handleLogout() {
+  await AFAS.signOut();
+  refreshApp();
+}
+
+async function applyEditor() {
+  await AFAS.applyAsEditor();
+  refreshApp();
+}
+
+async function loadAdminData() {
+  const pending = await AFAS.listPendingEditors();
+  document.getElementById('pending-list').innerHTML = pending.length ? pending.map(p => `
+    <div class="flex items-center justify-between border border-archive-100 rounded-xl p-3">
+      <span>${p.email}</span>
+      <div class="flex gap-2">
+        <button onclick="approveEditor('${p.id}')" class="btn-primary !py-1.5 !px-3 !text-xs">اعتماد</button>
+        <button onclick="rejectEditor('${p.id}')" class="btn-ghost !py-1.5 !px-3 !text-xs">رفض</button>
+      </div>
+    </div>`).join('') : '<p class="text-slate-400">لا توجد طلبات معلّقة</p>';
+
+  const editors = await AFAS.listAllEditorsAndAdmins();
+  document.getElementById('editors-list').innerHTML = editors.map(e => `
+    <div class="flex items-center justify-between border border-archive-100 rounded-xl p-3">
+      <span>${e.email} <span class="text-slate-400">(${e.role})</span></span>
+      <div class="flex items-center gap-2">
+        ${statusBadge(e.status)}
+        ${e.role !== 'super_admin' ? `<button onclick="suspendEditor('${e.id}')" class="btn-ghost !py-1.5 !px-3 !text-xs">${e.status === 'suspended' ? 'إعادة تفعيل' : 'طرد/تعليق'}</button>` : ''}
+      </div>
+    </div>`).join('');
+
+  const audit = await AFAS.getAuditLog(50);
+  document.getElementById('audit-list').innerHTML = audit.length ? audit.map(a => `
+    <div class="border-b border-archive-100 pb-1">${new Date(a.created_at).toLocaleString('ar')} — <b>${a.actor_email || 'نظام'}</b> — ${a.action} ${a.target ? '→ ' + a.target : ''}</div>
+  `).join('') : '<p class="text-slate-400">لا يوجد سجل بعد</p>';
+}
+
+async function approveEditor(id) { await AFAS.setEditorStatus(id, 'approved'); loadAdminData(); }
+async function rejectEditor(id) { await AFAS.setEditorStatus(id, 'rejected'); loadAdminData(); }
+async function suspendEditor(id) { await AFAS.setEditorStatus(id, 'suspended'); loadAdminData(); }
+
+refreshApp();
+</script>
+</body>
+</html>
