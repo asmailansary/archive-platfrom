@@ -96,25 +96,80 @@
       <p class="text-sm text-slate-500">تم إرسال طلبك للانضمام كمحرر معتمد. سيتم تفعيل حسابك بعد موافقة المسؤول الرئيسي.</p>
     </div>
 
-    <!-- EDITOR: approved -->
-    <div id="view-editor" class="hidden-view card p-8 space-y-3">
-      <h3 class="font-bold text-lg">لوحة المحرر</h3>
-      <p class="text-sm text-slate-500">تم تفعيل صلاحيات التحرير الخاصة بك. أدوات إدارة الوثائق (إضافة/تعديل/إرسال للمراجعة) ستُضاف في المرحلة القادمة من التطوير.</p>
-    </div>
+    <!-- WORKSPACE: shown to approved editors AND super admin -->
+    <div id="view-workspace" class="hidden-view space-y-6">
 
-    <!-- SUPER ADMIN -->
-    <div id="view-admin" class="hidden-view space-y-6">
+      <!-- Documents manager (editors + super admin) -->
       <div class="card p-6 space-y-4">
-        <h3 class="font-bold text-lg">طلبات المحررين المعلّقة</h3>
-        <div id="pending-list" class="space-y-3 text-sm"></div>
+        <div class="flex items-center justify-between flex-wrap gap-2">
+          <h3 class="font-bold text-lg">إدارة الوثائق</h3>
+          <button onclick="openDocForm()" class="btn-primary !py-2 !px-4 !text-xs">+ إضافة وثيقة جديدة</button>
+        </div>
+        <div id="doc-list" class="space-y-2 text-sm"></div>
       </div>
-      <div class="card p-6 space-y-4">
-        <h3 class="font-bold text-lg">جميع المحررين والمسؤولين</h3>
-        <div id="editors-list" class="space-y-3 text-sm"></div>
+
+      <!-- Add/Edit document form -->
+      <div id="doc-form-card" class="card p-6 space-y-3 hidden-view">
+        <h3 id="doc-form-title" class="font-bold text-lg">إضافة وثيقة جديدة</h3>
+        <input id="doc-title" placeholder="عنوان الوثيقة" class="input">
+        <select id="doc-category" class="input">
+          <option value="مراسلات">مراسلات</option>
+          <option value="قرارات">قرارات</option>
+          <option value="صور">صور</option>
+          <option value="مذكرات">مذكرات</option>
+        </select>
+        <div class="grid grid-cols-2 gap-3">
+          <input id="doc-date-label" placeholder="التاريخ كنص (مثال: 15 مايو 1956)" class="input">
+          <input id="doc-date" type="date" class="input">
+        </div>
+        <input id="doc-code" placeholder="الرقم الأرشيفي" class="input">
+        <input id="doc-image" placeholder="رابط صورة الغلاف" class="input">
+        <textarea id="doc-desc" placeholder="وصف مختصر يظهر في بطاقة الوثيقة" class="input" rows="2"></textarea>
+        <div>
+          <label class="text-xs text-slate-500 block mb-1">التفريغ النصي (باللغة الأصلية)</label>
+          <textarea id="doc-transcription" class="input" rows="3"></textarea>
+        </div>
+        <div>
+          <label class="text-xs text-slate-500 block mb-1">الترجمة العربية</label>
+          <textarea id="doc-translation" class="input" rows="3"></textarea>
+        </div>
+        <div>
+          <label class="text-xs text-slate-500 block mb-1">الهوامش والتحقيق</label>
+          <textarea id="doc-notes" class="input" rows="2"></textarea>
+        </div>
+        <div>
+          <label class="text-xs text-slate-500 block mb-1">الدراسة والتحليل</label>
+          <textarea id="doc-research" class="input" rows="2"></textarea>
+        </div>
+        <select id="doc-verification" class="input">
+          <option value="قيد المراجعة">قيد المراجعة</option>
+          <option value="موثق ومعتمد">موثق ومعتمد</option>
+          <option value="غير مؤكد">غير مؤكد</option>
+        </select>
+        <label class="flex items-center gap-2 text-sm">
+          <input id="doc-published" type="checkbox">
+          <span>منشورة على الموقع (يراها الزوار)</span>
+        </label>
+        <div class="flex gap-2 pt-2">
+          <button onclick="saveDocForm()" class="btn-primary">حفظ</button>
+          <button onclick="closeDocForm()" class="btn-ghost">إلغاء</button>
+        </div>
       </div>
-      <div class="card p-6 space-y-4">
-        <h3 class="font-bold text-lg">سجل المراجعة (Audit Log)</h3>
-        <div id="audit-list" class="space-y-2 text-xs max-h-96 overflow-y-auto"></div>
+
+      <!-- Admin-only sections -->
+      <div id="admin-only-sections" class="hidden-view space-y-6">
+        <div class="card p-6 space-y-4">
+          <h3 class="font-bold text-lg">طلبات المحررين المعلّقة</h3>
+          <div id="pending-list" class="space-y-3 text-sm"></div>
+        </div>
+        <div class="card p-6 space-y-4">
+          <h3 class="font-bold text-lg">جميع المحررين والمسؤولين</h3>
+          <div id="editors-list" class="space-y-3 text-sm"></div>
+        </div>
+        <div class="card p-6 space-y-4">
+          <h3 class="font-bold text-lg">سجل المراجعة (Audit Log)</h3>
+          <div id="audit-list" class="space-y-2 text-xs max-h-96 overflow-y-auto"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -122,7 +177,7 @@
 
 <script>
 function show(id) {
-  ['view-viewer','view-pending','view-editor','view-admin'].forEach(v => {
+  ['view-viewer','view-pending','view-workspace'].forEach(v => {
     document.getElementById(v).classList.add('hidden-view');
   });
   document.getElementById(id).classList.remove('hidden-view');
@@ -131,6 +186,9 @@ function show(id) {
 function statusBadge(status) {
   return `<span class="badge badge-${status}">${status}</span>`;
 }
+
+let allDocs = [];
+let editingDocId = null;
 
 async function refreshApp() {
   const profile = await AFAS.getMyProfile();
@@ -144,11 +202,14 @@ async function refreshApp() {
   document.getElementById('me-email').textContent = profile.email;
   document.getElementById('me-role').textContent = `${profile.role} · ${profile.status}`;
 
-  if (profile.role === 'super_admin' && profile.status === 'approved') {
-    show('view-admin');
-    loadAdminData();
-  } else if (profile.role === 'editor' && profile.status === 'approved') {
-    show('view-editor');
+  const isSuperAdmin = profile.role === 'super_admin' && profile.status === 'approved';
+  const isApprovedEditor = profile.role === 'editor' && profile.status === 'approved';
+
+  if (isSuperAdmin || isApprovedEditor) {
+    show('view-workspace');
+    document.getElementById('admin-only-sections').classList.toggle('hidden-view', !isSuperAdmin);
+    loadDocuments();
+    if (isSuperAdmin) loadAdminData();
   } else if (profile.role === 'editor' && profile.status === 'pending') {
     show('view-pending');
   } else {
@@ -224,6 +285,86 @@ async function loadAdminData() {
 async function approveEditor(id) { await AFAS.setEditorStatus(id, 'approved'); loadAdminData(); }
 async function rejectEditor(id) { await AFAS.setEditorStatus(id, 'rejected'); loadAdminData(); }
 async function suspendEditor(id) { await AFAS.setEditorStatus(id, 'suspended'); loadAdminData(); }
+
+// ---------- Documents manager ----------
+
+async function loadDocuments() {
+  allDocs = await AFAS.listAllDocuments();
+  const list = document.getElementById('doc-list');
+  list.innerHTML = allDocs.length ? allDocs.map(d => `
+    <div class="flex items-center justify-between border border-archive-100 rounded-xl p-3 gap-2 flex-wrap">
+      <div>
+        <p class="font-semibold">${d.title}</p>
+        <p class="text-xs text-slate-400">${d.category} · ${d.event_date_label || ''} · ${d.is_published ? '<span class="text-emerald-600 font-bold">منشورة</span>' : '<span class="text-amber-600 font-bold">مسودة</span>'}</p>
+      </div>
+      <div class="flex gap-2">
+        <button onclick="editDoc('${d.id}')" class="btn-ghost !py-1.5 !px-3 !text-xs">تعديل</button>
+        <button onclick="togglePublishDoc('${d.id}', ${!d.is_published})" class="btn-ghost !py-1.5 !px-3 !text-xs">${d.is_published ? 'إخفاء' : 'نشر'}</button>
+      </div>
+    </div>`).join('') : '<p class="text-slate-400">لا توجد وثائق بعد</p>';
+}
+
+function editDoc(id) {
+  const doc = allDocs.find(d => d.id === id);
+  if (doc) openDocForm(doc);
+}
+
+async function togglePublishDoc(id, newState) {
+  await AFAS.togglePublish(id, newState);
+  loadDocuments();
+}
+
+function openDocForm(doc) {
+  editingDocId = doc ? doc.id : null;
+  document.getElementById('doc-form-title').textContent = doc ? 'تعديل الوثيقة' : 'إضافة وثيقة جديدة';
+  document.getElementById('doc-title').value = doc?.title || '';
+  document.getElementById('doc-category').value = doc?.category || 'مراسلات';
+  document.getElementById('doc-date-label').value = doc?.event_date_label || '';
+  document.getElementById('doc-date').value = doc?.event_date || '';
+  document.getElementById('doc-code').value = doc?.reference_code || '';
+  document.getElementById('doc-image').value = doc?.cover_image || '';
+  document.getElementById('doc-desc').value = doc?.description || '';
+  document.getElementById('doc-transcription').value = doc?.transcription_text || '';
+  document.getElementById('doc-translation').value = doc?.translation_text || '';
+  document.getElementById('doc-notes').value = doc?.editorial_notes || '';
+  document.getElementById('doc-research').value = doc?.research_notes || '';
+  document.getElementById('doc-verification').value = doc?.verification_status || 'قيد المراجعة';
+  document.getElementById('doc-published').checked = doc?.is_published || false;
+  document.getElementById('doc-form-card').classList.remove('hidden-view');
+  document.getElementById('doc-form-card').scrollIntoView({ behavior: 'smooth' });
+}
+
+function closeDocForm() {
+  editingDocId = null;
+  document.getElementById('doc-form-card').classList.add('hidden-view');
+}
+
+async function saveDocForm() {
+  const payload = {
+    title: document.getElementById('doc-title').value.trim(),
+    category: document.getElementById('doc-category').value,
+    event_date_label: document.getElementById('doc-date-label').value.trim() || null,
+    event_date: document.getElementById('doc-date').value || null,
+    reference_code: document.getElementById('doc-code').value.trim() || null,
+    cover_image: document.getElementById('doc-image').value.trim() || null,
+    description: document.getElementById('doc-desc').value.trim() || null,
+    transcription_text: document.getElementById('doc-transcription').value.trim() || null,
+    translation_text: document.getElementById('doc-translation').value.trim() || null,
+    editorial_notes: document.getElementById('doc-notes').value.trim() || null,
+    research_notes: document.getElementById('doc-research').value.trim() || null,
+    verification_status: document.getElementById('doc-verification').value,
+    is_published: document.getElementById('doc-published').checked
+  };
+  if (!payload.title) { alert('العنوان مطلوب'); return; }
+  if (editingDocId) payload.id = editingDocId;
+  try {
+    await AFAS.saveDocument(payload);
+    closeDocForm();
+    loadDocuments();
+  } catch (e) {
+    alert('حدث خطأ أثناء الحفظ: ' + e.message);
+  }
+}
 
 refreshApp();
 </script>
