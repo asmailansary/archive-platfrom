@@ -94,6 +94,38 @@ const AFAS = {
       action, target, details
     });
     if (error) console.error("Audit log failed:", error);
+  },
+
+  // ---------- Documents (editor/super_admin only, enforced by RLS) ----------
+
+  async listAllDocuments() {
+    const { data, error } = await _sb.from("documents")
+      .select("*").order("created_at", { ascending: false });
+    if (error) throw error;
+    return data;
+  },
+
+  // Pass an object with an `id` to update an existing document,
+  // or without `id` to create a new one.
+  async saveDocument(doc) {
+    if (doc.id) {
+      const { id, ...rest } = doc;
+      const { error } = await _sb.from("documents").update(rest).eq("id", id);
+      if (error) throw error;
+      await this.logAction("document_updated", id);
+      return id;
+    } else {
+      const { data, error } = await _sb.from("documents").insert(doc).select().single();
+      if (error) throw error;
+      await this.logAction("document_created", data.id);
+      return data.id;
+    }
+  },
+
+  async togglePublish(id, isPublished) {
+    const { error } = await _sb.from("documents").update({ is_published: isPublished }).eq("id", id);
+    if (error) throw error;
+    await this.logAction(isPublished ? "document_published" : "document_unpublished", id);
   }
 };
 
