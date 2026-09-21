@@ -3,768 +3,370 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>منصة الأرشيف التاريخي - أنصار فرنسا</title>
-<!-- Tailwind CSS CDN -->
+<title>لوحة التحكم - أرشيف أنصار فرنسا (AFAS)</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
-tailwind.config = {
-  darkMode: 'class',
-  theme: {
-    extend: {
-      colors: {
-        archive: {
-          50: '#fdfbf7',
-          100: '#f7f2e7',
-          200: '#ede0ca',
-          300: '#dfc8a3',
-          400: '#ceab77',
-          500: '#bf9053',
-          600: '#aa7843',
-          700: '#8c5e38',
-          800: '#734d33',
-          900: '#5f402d',
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        colors: {
+          archive: {
+            50: '#fdfbf7', 100: '#f7f2e7', 200: '#ede0ca', 300: '#dfc8a3',
+            400: '#ceab77', 500: '#bf9053', 600: '#aa7843', 700: '#8c5e38',
+            800: '#734d33', 900: '#5f402d',
+          }
         },
-        emerald_navy: {
-          800: '#062c2d',
-          900: '#031b1c',
-        }
-      },
-      fontFamily: {
-        tajawal: ['Tajawal', 'sans-serif'],
-      },
-      animation: {
-        'fade-in': 'fadeIn 0.4s ease-out forwards',
-        'fade-out': 'fadeOut 0.3s ease-in forwards',
-        'scale-up': 'scaleUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards',
-        'float': 'float 6s ease-in-out infinite',
-        'pulse-glow': 'pulseGlow 3s infinite',
-      },
-      keyframes: {
-        fadeIn: {
-          '0%': { opacity: '0', transform: 'translateY(12px)' },
-          '100%': { opacity: '1', transform: 'translateY(0)' },
-        },
-        fadeOut: {
-          '0%': { opacity: '1', transform: 'translateY(0)' },
-          '100%': { opacity: '0', transform: 'translateY(-10px)' },
-        },
-        scaleUp: {
-          '0%': { opacity: '0', transform: 'scale(0.94)' },
-          '100%': { opacity: '1', transform: 'scale(1)' },
-        },
-        float: {
-          '0%, 100%': { transform: 'translateY(0px)' },
-          '50%': { transform: 'translateY(-8px)' },
-        },
-        pulseGlow: {
-          '0%, 100%': { opacity: '0.4' },
-          '50%': { opacity: '0.8' },
-        }
+        fontFamily: { tajawal: ['Tajawal', 'sans-serif'] }
       }
     }
   }
-}
 </script>
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
-<!-- Supabase (dynamic content) -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase-client.js"></script>
+<script src="../supabase-client.js"></script>
 <style>
-body {
-  font-family: 'Tajawal', sans-serif;
-  transition: background-color 0.5s ease, color 0.5s ease;
-}
-/* Smooth View Switch Container */
-.view-section {
-  transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.view-section.hidden-view {
-  display: none;
-  opacity: 0;
-  transform: translateY(16px);
-}
-.view-section.active-view {
-  display: block;
-  opacity: 1;
-  transform: translateY(0);
-}
-/* Glassmorphism Effect */
-.glass-panel {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-}
-.dark .glass-panel {
-  background: rgba(15, 23, 42, 0.85);
-}
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-}
-::-webkit-scrollbar-track {
-  background: rgba(0,0,0,0.05);
-}
-::-webkit-scrollbar-thumb {
-  background: #bf9053;
-  border-radius: 9999px;
-}
-/* Card Hover Smooth Lift */
-.interactive-card {
-  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.35s ease, border-color 0.35s ease;
-}
-.interactive-card:hover {
-  transform: translateY(-6px) scale(1.01);
-}
-/* Active Tab Indicator Pill */
-.tab-indicator {
-  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-}
-/* Document modal internal tabs */
-.doc-tab-btn {
-  transition: all 0.25s ease;
-}
-.doc-tab-btn.active {
-  background-color: #aa7843;
-  color: #fff;
-}
+  body { font-family: 'Tajawal', sans-serif; }
+  .card { background: white; border-radius: 1.25rem; border: 1px solid #ede0ca; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+  .btn-primary { background:#aa7843; color:#fff; padding:.65rem 1.5rem; border-radius:.9rem; font-weight:700; font-size:.85rem; }
+  .btn-primary:hover { background:#8c5e38; }
+  .btn-ghost { background:#f7f2e7; color:#734d33; padding:.65rem 1.5rem; border-radius:.9rem; font-weight:700; font-size:.85rem; }
+  .btn-ghost:hover { background:#ede0ca; }
+  .input { width:100%; padding:.75rem 1rem; border-radius:.75rem; border:1px solid #ede0ca; font-size:.9rem; }
+  .badge { padding:.2rem .7rem; border-radius:9999px; font-size:.7rem; font-weight:700; }
+  .badge-pending { background:#fef3c7; color:#92400e; }
+  .badge-approved { background:#d1fae5; color:#065f46; }
+  .badge-rejected, .badge-suspended { background:#fee2e2; color:#991b1b; }
+  .hidden-view { display:none; }
 </style>
 </head>
-<body class="bg-archive-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-500">
+<body class="bg-archive-50 text-slate-800 min-h-screen flex flex-col">
 
-<!-- Top Navigation Header -->
-<header class="sticky top-0 z-40 w-full border-b border-archive-200/60 dark:border-slate-800/80 glass-panel shadow-sm">
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-<div class="flex items-center justify-between h-20">
-<!-- Logo & Brand -->
-<div class="flex items-center space-x-3 space-x-reverse cursor-pointer group" onclick="switchTab('hero')">
-<div class="w-12 h-12 rounded-xl bg-gradient-to-br from-archive-500 to-archive-700 flex items-center justify-center text-white shadow-md shadow-archive-500/20 group-hover:scale-105 transition-transform duration-300">
-<svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-</svg>
-</div>
-<div>
-<h1 class="text-xl font-bold bg-gradient-to-r from-archive-800 to-archive-600 dark:from-archive-300 dark:to-archive-500 bg-clip-text text-transparent">
-أرشيف أنصار فرنسا
-</h1>
-<p class="text-xs text-slate-500 dark:text-slate-400 font-medium">المنصة التاريخية للتوثيق والبحث</p>
-</div>
-</div>
-
-<!-- Desktop Navigation Tabs -->
-<nav class="hidden md:flex relative bg-archive-100/70 dark:bg-slate-900/80 p-1.5 rounded-2xl border border-archive-200/50 dark:border-slate-800">
-<div id="tab-indicator" class="tab-indicator absolute bg-white dark:bg-archive-600 shadow-sm rounded-xl h-[calc(100%-12px)] top-[6px] transition-all duration-300 pointer-events-none"></div>
-<button onclick="switchTab('hero', this)" class="nav-btn relative z-10 px-5 py-2 text-sm font-semibold rounded-xl text-archive-800 dark:text-white transition-colors duration-200" data-tab="hero">
-الرئيسية
-</button>
-<button onclick="switchTab('archive', this)" class="nav-btn relative z-10 px-5 py-2 text-sm font-semibold rounded-xl text-slate-600 dark:text-slate-400 hover:text-archive-700 transition-colors duration-200" data-tab="archive">
-الأرشيف والوثائق
-</button>
-<button onclick="switchTab('timeline', this)" class="nav-btn relative z-10 px-5 py-2 text-sm font-semibold rounded-xl text-slate-600 dark:text-slate-400 hover:text-archive-700 transition-colors duration-200" data-tab="timeline">
-التسلسل الزمني
-</button>
-<button onclick="switchTab('figures', this)" class="nav-btn relative z-10 px-5 py-2 text-sm font-semibold rounded-xl text-slate-600 dark:text-slate-400 hover:text-archive-700 transition-colors duration-200" data-tab="figures">
-الشخصيات التاريخية
-</button>
-</nav>
-
-<!-- Actions (Dark Mode Toggle & Search trigger) -->
-<div class="flex items-center space-x-3 space-x-reverse">
-<button onclick="toggleDarkMode()" aria-label="تغيير المظهر" class="p-2.5 rounded-xl bg-archive-100 dark:bg-slate-800 text-slate-700 dark:text-archive-300 hover:scale-105 active:scale-95 transition-all duration-200">
-<!-- Sun Icon -->
-<svg id="sun-icon" class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
-</svg>
-<!-- Moon Icon -->
-<svg id="moon-icon" class="w-5 h-5 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
-</svg>
-</button>
-<!-- Mobile Menu Trigger -->
-<button onclick="toggleMobileMenu()" class="md:hidden p-2.5 rounded-xl bg-archive-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200">
-<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
-</svg>
-</button>
-</div>
-</div>
-</div>
-
-<!-- Mobile Drawer Menu with smooth max-height animation -->
-<div id="mobile-menu" class="md:hidden max-h-0 overflow-hidden transition-all duration-500 ease-in-out bg-archive-50/95 dark:bg-slate-900/95 border-b border-archive-200/50 dark:border-slate-800">
-<div class="px-4 pt-2 pb-4 space-y-2">
-<button onclick="switchTab('hero'); toggleMobileMenu();" class="w-full text-right px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-800 dark:text-slate-100 hover:bg-archive-100 dark:hover:bg-slate-800 transition-colors">الرئيسية</button>
-<button onclick="switchTab('archive'); toggleMobileMenu();" class="w-full text-right px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-800 dark:text-slate-100 hover:bg-archive-100 dark:hover:bg-slate-800 transition-colors">الأرشيف والوثائق</button>
-<button onclick="switchTab('timeline'); toggleMobileMenu();" class="w-full text-right px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-800 dark:text-slate-100 hover:bg-archive-100 dark:hover:bg-slate-800 transition-colors">التسلسل الزمني</button>
-<button onclick="switchTab('figures'); toggleMobileMenu();" class="w-full text-right px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-800 dark:text-slate-100 hover:bg-archive-100 dark:hover:bg-slate-800 transition-colors">الشخصيات التاريخية</button>
-</div>
-</div>
+<header class="border-b border-archive-200/60 bg-white/80 backdrop-blur-md py-4">
+  <div class="max-w-5xl mx-auto px-4 flex items-center justify-between">
+    <div>
+      <h1 class="text-lg font-bold text-archive-800">لوحة تحكم الأرشيف <span class="text-archive-500">(AFAS)</span></h1>
+      <p class="text-xs text-slate-500">دخول المسؤولين والمحررين المعتمدين</p>
+    </div>
+    <a href="../index.html" class="text-xs font-semibold text-archive-600 hover:underline">عودة للموقع الرئيسي</a>
+  </div>
 </header>
 
-<!-- MAIN CONTENT VIEW CONTAINERS -->
-<main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 relative">
+<main class="flex-grow max-w-5xl w-full mx-auto px-4 py-10 space-y-6">
 
-<!-- SECTION 1: HERO VIEW -->
-<section id="view-hero" class="view-section active-view space-y-12">
-<!-- Hero Banner -->
-<div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-archive-900 via-archive-800 to-slate-900 text-white p-8 sm:p-12 shadow-2xl">
-<!-- Floating Decorative Shapes -->
-<div class="absolute -top-12 -left-12 w-64 h-64 bg-archive-500/20 rounded-full blur-3xl animate-float"></div>
-<div class="absolute -bottom-16 -right-16 w-80 h-80 bg-archive-400/10 rounded-full blur-3xl animate-float" style="animation-delay: 2s;"></div>
-<div class="relative z-10 max-w-3xl space-y-6">
-<span class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-archive-500/20 border border-archive-400/30 text-archive-200">
-<span class="w-2 h-2 rounded-full bg-archive-400 animate-pulse"></span>
-أكبر قاعدة بيانات أرشيفية وثائقية
-</span>
-<h2 class="text-3xl sm:text-5xl font-extrabold leading-tight text-archive-100">
-اكتشف التاريخ من خلال الوثائق والمراسلات الأصلية
-</h2>
-<p class="text-slate-300 text-base sm:text-lg leading-relaxed">
-منصة تفاعلية مخصصة لأرشيف "أنصار فرنسا" توفر إمكانية الوصول إلى آلاف المخطوطات والقرارات التاريخية والتسلسلات الزمنية مع إمكانية البحث المتقدم.
-</p>
-<div class="flex flex-wrap gap-4 pt-2">
-<button onclick="switchTab('archive')" class="px-6 py-3.5 bg-archive-500 hover:bg-archive-400 text-white font-bold rounded-2xl shadow-lg shadow-archive-500/30 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center gap-2">
-<span>تصفح الأرشيف الكامل</span>
-<svg class="w-5 h-5 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-</button>
-<button onclick="switchTab('timeline')" class="px-6 py-3.5 bg-white/10 hover:bg-white/20 text-white font-semibold rounded-2xl backdrop-blur-md border border-white/15 hover:scale-105 active:scale-95 transition-all duration-300">
-استكشف الخط الزمني
-</button>
-</div>
-</div>
-</div>
+  <!-- LOGIN VIEW -->
+  <div id="view-login" class="max-w-md mx-auto card p-8 space-y-5">
+    <h2 class="text-xl font-bold text-center text-archive-900">تسجيل الدخول</h2>
+    <div id="login-error" class="hidden-view text-xs text-red-600 bg-red-50 border border-red-200 rounded-xl p-3"></div>
+    <div class="space-y-3">
+      <input id="login-email" type="email" placeholder="البريد الإلكتروني" class="input">
+      <input id="login-password" type="password" placeholder="كلمة المرور" class="input">
+      <button onclick="handleLogin()" class="btn-primary w-full">دخول</button>
+      <button onclick="AFAS.signInWithGoogle()" class="btn-ghost w-full">الدخول عبر Google</button>
+    </div>
+    <hr class="border-archive-100">
+    <p class="text-xs text-slate-500 text-center">ليس لديك حساب؟</p>
+    <div class="space-y-3">
+      <input id="signup-email" type="email" placeholder="البريد الإلكتروني" class="input">
+      <input id="signup-password" type="password" placeholder="اختر كلمة مرور" class="input">
+      <button onclick="handleSignup()" class="btn-ghost w-full">إنشاء حساب جديد</button>
+    </div>
+  </div>
 
-<!-- Quick Stats Counters -->
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
-<div class="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-archive-200/60 dark:border-slate-800 shadow-sm text-center interactive-card">
-<span class="text-3xl sm:text-4xl font-extrabold text-archive-600 dark:text-archive-400 block mb-1">1,420+</span>
-<span class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">وثيقة ومخطوطة</span>
-</div>
-<div class="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-archive-200/60 dark:border-slate-800 shadow-sm text-center interactive-card">
-<span class="text-3xl sm:text-4xl font-extrabold text-archive-600 dark:text-archive-400 block mb-1">85</span>
-<span class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">شخصية بارزة</span>
-</div>
-<div class="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-archive-200/60 dark:border-slate-800 shadow-sm text-center interactive-card">
-<span class="text-3xl sm:text-4xl font-extrabold text-archive-600 dark:text-archive-400 block mb-1">12</span>
-<span class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">حقبة زمنية</span>
-</div>
-<div class="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-archive-200/60 dark:border-slate-800 shadow-sm text-center interactive-card">
-<span class="text-3xl sm:text-4xl font-extrabold text-archive-600 dark:text-archive-400 block mb-1">100%</span>
-<span class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">رقمنة عالية الدقة</span>
-</div>
-</div>
+  <!-- LOGGED-IN SHELL -->
+  <div id="view-app" class="hidden-view space-y-6">
+    <div class="card p-5 flex items-center justify-between">
+      <div>
+        <p class="text-sm font-bold" id="me-email">-</p>
+        <span id="me-role" class="badge badge-approved">-</span>
+      </div>
+      <button onclick="handleLogout()" class="btn-ghost">تسجيل الخروج</button>
+    </div>
 
-<!-- Featured Categories Highlights -->
-<div class="space-y-6">
-<div class="flex items-center justify-between">
-<div>
-<h3 class="text-2xl font-bold text-slate-800 dark:text-slate-100">أبرز الأقسام الأرشيفية</h3>
-<p class="text-sm text-slate-500 dark:text-slate-400">تصفح الأرشيف حسب التصنيفات الرئيسية</p>
-</div>
-</div>
-<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-<div onclick="filterCategoryAndOpen('مراسلات')" class="interactive-card p-6 rounded-2xl bg-white dark:bg-slate-900 border border-archive-200/60 dark:border-slate-800 shadow-sm cursor-pointer group">
-<div class="w-12 h-12 rounded-xl bg-archive-100 dark:bg-slate-800 text-archive-600 dark:text-archive-400 flex items-center justify-center mb-4 group-hover:bg-archive-500 group-hover:text-white transition-colors duration-300">
-<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 002-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
-</div>
-<h4 class="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2">المراسلات الرسمية</h4>
-<p class="text-sm text-slate-500 dark:text-slate-400">خطابات، برقيات، ورسائل دبلوماسية تاريخية بين الأطراف المعنية.</p>
-</div>
-<div onclick="filterCategoryAndOpen('قرارات')" class="interactive-card p-6 rounded-2xl bg-white dark:bg-slate-900 border border-archive-200/60 dark:border-slate-800 shadow-sm cursor-pointer group">
-<div class="w-12 h-12 rounded-xl bg-archive-100 dark:bg-slate-800 text-archive-600 dark:text-archive-400 flex items-center justify-center mb-4 group-hover:bg-archive-500 group-hover:text-white transition-colors duration-300">
-<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-</div>
-<h4 class="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2">القرارات والمعاهدات</h4>
-<p class="text-sm text-slate-500 dark:text-slate-400">اتفاقيات رسمية وبنود ومستندات الإعلان والاتفاق التاريخي.</p>
-</div>
-<div onclick="filterCategoryAndOpen('صور')" class="interactive-card p-6 rounded-2xl bg-white dark:bg-slate-900 border border-archive-200/60 dark:border-slate-800 shadow-sm cursor-pointer group">
-<div class="w-12 h-12 rounded-xl bg-archive-100 dark:bg-slate-800 text-archive-600 dark:text-archive-400 flex items-center justify-center mb-4 group-hover:bg-archive-500 group-hover:text-white transition-colors duration-300">
-<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-</div>
-<h4 class="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2">الأرشيف المصور</h4>
-<p class="text-sm text-slate-500 dark:text-slate-400">لقطات نادرة ومستندات مصورة بدقة عالية مع الشروح التاريخية.</p>
-</div>
-</div>
-</div>
-</section>
+    <!-- VIEWER: not yet an editor -->
+    <div id="view-viewer" class="hidden-view card p-8 text-center space-y-4">
+      <h3 class="font-bold text-lg">حساب زائر</h3>
+      <p class="text-sm text-slate-500">لا تملك صلاحية دخول لوحة التحكم بعد. يمكنك التقدم لتصبح محرراً معتمداً — سيراجع طلبك المسؤول الرئيسي.</p>
+      <button onclick="applyEditor()" class="btn-primary">التقدم كمحرر</button>
+    </div>
 
-<!-- SECTION 2: ARCHIVE & DOCUMENTS VIEW -->
-<section id="view-archive" class="view-section hidden-view space-y-8">
-<!-- Section Title & Filters -->
-<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-<div>
-<h2 class="text-3xl font-bold text-slate-900 dark:text-slate-100">الأرشيف والوثائق</h2>
-<p class="text-sm text-slate-500 dark:text-slate-400">ابحث وتصفح الوثائق التاريخية الرقمية بسهولة</p>
-</div>
-<!-- Search Input Bar with Smooth Focus Effect -->
-<div class="relative w-full md:w-80">
-<input type="text" id="archive-search" oninput="renderArchiveItems()" placeholder="ابحث في عنوان أو رقم الوثيقة..."
-class="w-full pl-4 pr-10 py-3 rounded-xl bg-white dark:bg-slate-900 border border-archive-200 dark:border-slate-800 focus:outline-none focus:ring-2 focus:ring-archive-500 transition-all duration-300 text-sm">
-<svg class="w-5 h-5 absolute right-3 top-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-</div>
-</div>
-<!-- Filter Badges / Pills -->
-<div class="flex flex-wrap gap-2 pb-2">
-<button onclick="setFilter('all', this)" class="filter-pill active px-4 py-2 rounded-xl text-xs font-bold bg-archive-600 text-white shadow-md transition-all duration-300">الكل</button>
-<button onclick="setFilter('مراسلات', this)" class="filter-pill px-4 py-2 rounded-xl text-xs font-semibold bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-archive-100 border border-archive-200 dark:border-slate-800 transition-all duration-300">المراسلات</button>
-<button onclick="setFilter('قرارات', this)" class="filter-pill px-4 py-2 rounded-xl text-xs font-semibold bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-archive-100 border border-archive-200 dark:border-slate-800 transition-all duration-300">القرارات</button>
-<button onclick="setFilter('صور', this)" class="filter-pill px-4 py-2 rounded-xl text-xs font-semibold bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-archive-100 border border-archive-200 dark:border-slate-800 transition-all duration-300">الأرشيف المصور</button>
-<button onclick="setFilter('مذكرات', this)" class="filter-pill px-4 py-2 rounded-xl text-xs font-semibold bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-archive-100 border border-archive-200 dark:border-slate-800 transition-all duration-300">المذكرات والتقارير</button>
-</div>
-<!-- Documents Grid Container -->
-<div id="archive-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 transition-all duration-500">
-<!-- JS dynamic injection of animated cards -->
-</div>
-</section>
+    <!-- EDITOR: pending approval -->
+    <div id="view-pending" class="hidden-view card p-8 text-center space-y-2">
+      <h3 class="font-bold text-lg">طلبك قيد المراجعة</h3>
+      <p class="text-sm text-slate-500">تم إرسال طلبك للانضمام كمحرر معتمد. سيتم تفعيل حسابك بعد موافقة المسؤول الرئيسي.</p>
+    </div>
 
-<!-- SECTION 3: TIMELINE VIEW -->
-<section id="view-timeline" class="view-section hidden-view space-y-8">
-<div class="text-center max-w-2xl mx-auto space-y-2">
-<h2 class="text-3xl font-bold text-slate-900 dark:text-slate-100">التسلسل الزمني للأحداث</h2>
-<p class="text-slate-500 dark:text-slate-400 text-sm">محطات تاريخية رئيسية موثقة بالتواريخ والوثائق الملحقة</p>
-</div>
-<!-- Timeline Vertical Track -->
-<div class="relative border-r-2 border-archive-300 dark:border-slate-800 mr-4 md:mr-32 my-8 space-y-8">
-<!-- Event 1 -->
-<div class="relative pr-8 group">
-<div class="absolute -right-[11px] top-1.5 w-5 h-5 rounded-full bg-archive-500 border-4 border-archive-50 dark:border-slate-950 shadow group-hover:scale-125 transition-transform duration-300"></div>
-<div class="interactive-card p-6 rounded-2xl bg-white dark:bg-slate-900 border border-archive-200/60 dark:border-slate-800 shadow-sm">
-<span class="inline-block px-3 py-1 text-xs font-bold bg-archive-100 dark:bg-slate-800 text-archive-700 dark:text-archive-300 rounded-lg mb-2">15 مايو 1956</span>
-<h3 class="text-xl font-bold text-slate-900 dark:text-slate-100 mb-2">تأسيس هيئة التنسيق والاتصال الأرشيفي</h3>
-<p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mb-4">
-صدر القرار التأسيسي لتجميع المراسلات والتقارير الميدانية وتوثيقها بشكل رسمي لحفظ الأرشيف التاريخي.
-</p>
-<button onclick="openModalById('doc-1')" class="text-xs font-bold text-archive-600 dark:text-archive-400 hover:underline flex items-center gap-1">
-عرض الوثيقة المرفقة
-<svg class="w-4 h-4 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-</button>
-</div>
-</div>
-<!-- Event 2 -->
-<div class="relative pr-8 group">
-<div class="absolute -right-[11px] top-1.5 w-5 h-5 rounded-full bg-archive-500 border-4 border-archive-50 dark:border-slate-950 shadow group-hover:scale-125 transition-transform duration-300"></div>
-<div class="interactive-card p-6 rounded-2xl bg-white dark:bg-slate-900 border border-archive-200/60 dark:border-slate-800 shadow-sm">
-<span class="inline-block px-3 py-1 text-xs font-bold bg-archive-100 dark:bg-slate-800 text-archive-700 dark:text-archive-300 rounded-lg mb-2">10 سبتمبر 1958</span>
-<h3 class="text-xl font-bold text-slate-900 dark:text-slate-100 mb-2">اتفاقية التبادل الوثائقي والدبلوماسي</h3>
-<p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mb-4">
-مذكرة تفاهم حول تنظيم تداول الوثائق السرية والرسائل الخاصة المتبادلة بين الوفود.
-</p>
-<button onclick="openModalById('doc-2')" class="text-xs font-bold text-archive-600 dark:text-archive-400 hover:underline flex items-center gap-1">
-عرض الوثيقة المرفقة
-<svg class="w-4 h-4 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-</button>
-</div>
-</div>
-<!-- Event 3 -->
-<div class="relative pr-8 group">
-<div class="absolute -right-[11px] top-1.5 w-5 h-5 rounded-full bg-archive-500 border-4 border-archive-50 dark:border-slate-950 shadow group-hover:scale-125 transition-transform duration-300"></div>
-<div class="interactive-card p-6 rounded-2xl bg-white dark:bg-slate-900 border border-archive-200/60 dark:border-slate-800 shadow-sm">
-<span class="inline-block px-3 py-1 text-xs font-bold bg-archive-100 dark:bg-slate-800 text-archive-700 dark:text-archive-300 rounded-lg mb-2">22 مارس 1962</span>
-<h3 class="text-xl font-bold text-slate-900 dark:text-slate-100 mb-2">اعتماد الأرشيف النهائي وتوثيقه رقمياً</h3>
-<p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mb-4">
-إنهاء جمع كافة التقارير الرسمية وإيداع نسخة منها في السجلات الوطنية الأرشيفية.
-</p>
-<button onclick="openModalById('doc-3')" class="text-xs font-bold text-archive-600 dark:text-archive-400 hover:underline flex items-center gap-1">
-عرض الوثيقة المرفقة
-<svg class="w-4 h-4 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-</button>
-</div>
-</div>
-</div>
-</section>
+    <!-- WORKSPACE: shown to approved editors AND super admin -->
+    <div id="view-workspace" class="hidden-view space-y-6">
 
-<!-- SECTION 4: FIGURES VIEW -->
-<section id="view-figures" class="view-section hidden-view space-y-8">
-<div>
-<h2 class="text-3xl font-bold text-slate-900 dark:text-slate-100">الشخصيات التاريخية</h2>
-<p class="text-sm text-slate-500 dark:text-slate-400">سير ذاتية ومستندات متعلقة بأبرز الشخصيات المؤثرة</p>
-</div>
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-<!-- Person Card 1 -->
-<div class="interactive-card bg-white dark:bg-slate-900 rounded-2xl border border-archive-200/60 dark:border-slate-800 p-6 flex flex-col items-center text-center">
-<div class="w-24 h-24 rounded-full bg-gradient-to-tr from-archive-400 to-archive-600 p-1 mb-4 shadow-md">
-<img src="https://placehold.co/200x200/8c5e38/ffffff?text=شخصية+1" alt="شخصية تاريخية" class="w-full h-full object-cover rounded-full">
-</div>
-<h3 class="text-lg font-bold text-slate-900 dark:text-slate-100">سليمان الأرشيڤي</h3>
-<span class="text-xs font-medium text-archive-600 dark:text-archive-400 mb-3">مؤرخ رئيسي ورئيس اللجنة</span>
-<p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed mb-4">
-أشرف على جمع وتوثيق أكثر من 500 مراسلة تاريخية صادرة في الفترة ما بين 1955 و1962.
-</p>
-<button onclick="showToast('تم تحميل ملف الشخصية')" class="w-full py-2 bg-archive-100 dark:bg-slate-800 text-archive-800 dark:text-archive-300 font-semibold text-xs rounded-xl hover:bg-archive-200 dark:hover:bg-slate-700 transition-colors">عرض السيرة والوثائق المرتبطة</button>
-</div>
-<!-- Person Card 2 -->
-<div class="interactive-card bg-white dark:bg-slate-900 rounded-2xl border border-archive-200/60 dark:border-slate-800 p-6 flex flex-col items-center text-center">
-<div class="w-24 h-24 rounded-full bg-gradient-to-tr from-archive-400 to-archive-600 p-1 mb-4 shadow-md">
-<img src="https://placehold.co/200x200/734d33/ffffff?text=شخصية+2" alt="شخصية تاريخية" class="w-full h-full object-cover rounded-full">
-</div>
-<h3 class="text-lg font-bold text-slate-900 dark:text-slate-100">د. أمين الدبلوماسي</h3>
-<span class="text-xs font-medium text-archive-600 dark:text-archive-400 mb-3">مستشار العلاقات والتصاوير</span>
-<p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed mb-4">
-قاد المفاوضات التوثيقية وحافظ على الأرشيف المصور للقرارات والمعاهدات الثنائية.
-</p>
-<button onclick="showToast('تم تحميل ملف الشخصية')" class="w-full py-2 bg-archive-100 dark:bg-slate-800 text-archive-800 dark:text-archive-300 font-semibold text-xs rounded-xl hover:bg-archive-200 dark:hover:bg-slate-700 transition-colors">عرض السيرة والوثائق المرتبطة</button>
-</div>
-<!-- Person Card 3 -->
-<div class="interactive-card bg-white dark:bg-slate-900 rounded-2xl border border-archive-200/60 dark:border-slate-800 p-6 flex flex-col items-center text-center">
-<div class="w-24 h-24 rounded-full bg-gradient-to-tr from-archive-400 to-archive-600 p-1 mb-4 shadow-md">
-<img src="https://placehold.co/200x200/5f402d/ffffff?text=شخصية+3" alt="شخصية تاريخية" class="w-full h-full object-cover rounded-full">
-</div>
-<h3 class="text-lg font-bold text-slate-900 dark:text-slate-100">فاطمة التوثيقية</h3>
-<span class="text-xs font-medium text-archive-600 dark:text-archive-400 mb-3">أخصائية ترميم المخطوطات</span>
-<p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed mb-4">
-شغلت منصب مسؤولة التدقيق والترميم الكيميائي للرسائل الورقية القديمة في الأرشيف.
-</p>
-<button onclick="showToast('تم تحميل ملف الشخصية')" class="w-full py-2 bg-archive-100 dark:bg-slate-800 text-archive-800 dark:text-archive-300 font-semibold text-xs rounded-xl hover:bg-archive-200 dark:hover:bg-slate-700 transition-colors">عرض السيرة والوثائق المرتبطة</button>
-</div>
-</div>
-</section>
+      <!-- Documents manager (editors + super admin) -->
+      <div class="card p-6 space-y-4">
+        <div class="flex items-center justify-between flex-wrap gap-2">
+          <h3 class="font-bold text-lg">إدارة الوثائق</h3>
+          <button onclick="openDocForm()" class="btn-primary !py-2 !px-4 !text-xs">+ إضافة وثيقة جديدة</button>
+        </div>
+        <div id="doc-list" class="space-y-2 text-sm"></div>
+      </div>
+
+      <!-- Add/Edit document form -->
+      <div id="doc-form-card" class="card p-6 space-y-3 hidden-view">
+        <h3 id="doc-form-title" class="font-bold text-lg">إضافة وثيقة جديدة</h3>
+        <input id="doc-title" placeholder="عنوان الوثيقة" class="input">
+        <select id="doc-category" class="input">
+          <option value="مراسلات">مراسلات</option>
+          <option value="قرارات">قرارات</option>
+          <option value="صور">صور</option>
+          <option value="مذكرات">مذكرات</option>
+        </select>
+        <div class="grid grid-cols-2 gap-3">
+          <input id="doc-date-label" placeholder="التاريخ كنص (مثال: 15 مايو 1956)" class="input">
+          <input id="doc-date" type="date" class="input">
+        </div>
+        <input id="doc-code" placeholder="الرقم الأرشيفي" class="input">
+        <input id="doc-image" placeholder="رابط صورة الغلاف" class="input">
+        <textarea id="doc-desc" placeholder="وصف مختصر يظهر في بطاقة الوثيقة" class="input" rows="2"></textarea>
+        <div>
+          <label class="text-xs text-slate-500 block mb-1">التفريغ النصي (باللغة الأصلية)</label>
+          <textarea id="doc-transcription" class="input" rows="3"></textarea>
+        </div>
+        <div>
+          <label class="text-xs text-slate-500 block mb-1">الترجمة العربية</label>
+          <textarea id="doc-translation" class="input" rows="3"></textarea>
+        </div>
+        <div>
+          <label class="text-xs text-slate-500 block mb-1">الهوامش والتحقيق</label>
+          <textarea id="doc-notes" class="input" rows="2"></textarea>
+        </div>
+        <div>
+          <label class="text-xs text-slate-500 block mb-1">الدراسة والتحليل</label>
+          <textarea id="doc-research" class="input" rows="2"></textarea>
+        </div>
+        <select id="doc-verification" class="input">
+          <option value="قيد المراجعة">قيد المراجعة</option>
+          <option value="موثق ومعتمد">موثق ومعتمد</option>
+          <option value="غير مؤكد">غير مؤكد</option>
+        </select>
+        <label class="flex items-center gap-2 text-sm">
+          <input id="doc-published" type="checkbox">
+          <span>منشورة على الموقع (يراها الزوار)</span>
+        </label>
+        <div class="flex gap-2 pt-2">
+          <button onclick="saveDocForm()" class="btn-primary">حفظ</button>
+          <button onclick="closeDocForm()" class="btn-ghost">إلغاء</button>
+        </div>
+      </div>
+
+      <!-- Admin-only sections -->
+      <div id="admin-only-sections" class="hidden-view space-y-6">
+        <div class="card p-6 space-y-4">
+          <h3 class="font-bold text-lg">طلبات المحررين المعلّقة</h3>
+          <div id="pending-list" class="space-y-3 text-sm"></div>
+        </div>
+        <div class="card p-6 space-y-4">
+          <h3 class="font-bold text-lg">جميع المحررين والمسؤولين</h3>
+          <div id="editors-list" class="space-y-3 text-sm"></div>
+        </div>
+        <div class="card p-6 space-y-4">
+          <h3 class="font-bold text-lg">سجل المراجعة (Audit Log)</h3>
+          <div id="audit-list" class="space-y-2 text-xs max-h-96 overflow-y-auto"></div>
+        </div>
+      </div>
+    </div>
+  </div>
 </main>
 
-<!-- DOCUMENT PREVIEW MODAL -->
-<div id="doc-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-300">
-<!-- Backdrop Blur overlay -->
-<div onclick="closeModal()" class="absolute inset-0 bg-slate-950/60 backdrop-blur-sm transition-opacity duration-300"></div>
-<!-- Modal Dialog Box -->
-<div id="modal-content" class="relative w-full max-w-2xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-archive-200 dark:border-slate-800 overflow-hidden transform scale-95 transition-all duration-300">
-<!-- Modal Header -->
-<div class="flex items-center justify-between p-6 border-b border-archive-100 dark:border-slate-800">
-<div class="flex items-center gap-2 flex-wrap">
-<span id="modal-badge" class="px-3 py-1 rounded-full text-xs font-bold bg-archive-100 dark:bg-slate-800 text-archive-700 dark:text-archive-300">تصنيف</span>
-<span id="modal-verification" class="px-3 py-1 rounded-full text-xs font-bold">قيد المراجعة</span>
-<h3 id="modal-title" class="text-xl font-bold text-slate-900 dark:text-slate-100 w-full mt-1">عنوان الوثيقة</h3>
-</div>
-<button onclick="closeModal()" class="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex-shrink-0">
-<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-</button>
-</div>
-
-<!-- Archival levels tab bar -->
-<div class="flex flex-wrap gap-2 px-6 pt-4">
-<button id="doc-tab-btn-source" onclick="showModalTab('source')" class="doc-tab-btn active px-3 py-1.5 rounded-lg text-[11px] font-bold bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-archive-200 dark:border-slate-800">المصدر الأصلي</button>
-<button id="doc-tab-btn-transcription" onclick="showModalTab('transcription')" class="doc-tab-btn px-3 py-1.5 rounded-lg text-[11px] font-bold bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-archive-200 dark:border-slate-800">التفريغ النصي</button>
-<button id="doc-tab-btn-translation" onclick="showModalTab('translation')" class="doc-tab-btn px-3 py-1.5 rounded-lg text-[11px] font-bold bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-archive-200 dark:border-slate-800">الترجمة</button>
-<button id="doc-tab-btn-notes" onclick="showModalTab('notes')" class="doc-tab-btn px-3 py-1.5 rounded-lg text-[11px] font-bold bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-archive-200 dark:border-slate-800">الهوامش والتحقيق</button>
-<button id="doc-tab-btn-research" onclick="showModalTab('research')" class="doc-tab-btn px-3 py-1.5 rounded-lg text-[11px] font-bold bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-archive-200 dark:border-slate-800">الدراسة والتحليل</button>
-</div>
-
-<!-- Modal Content Body -->
-<div class="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
-
-<div id="doc-panel-source" class="space-y-4">
-<div class="relative h-48 rounded-2xl overflow-hidden bg-archive-100 dark:bg-slate-800">
-<img id="modal-img" src="" alt="معاينة الوثيقة" class="w-full h-full object-cover">
-</div>
-<div class="grid grid-cols-2 gap-4 text-xs">
-<div class="p-3 bg-archive-50 dark:bg-slate-800/50 rounded-xl border border-archive-100 dark:border-slate-800">
-<span class="text-slate-400 block mb-0.5">تاريخ الوثيقة:</span>
-<span id="modal-date" class="font-bold text-slate-800 dark:text-slate-200">-</span>
-</div>
-<div class="p-3 bg-archive-50 dark:bg-slate-800/50 rounded-xl border border-archive-100 dark:border-slate-800">
-<span class="text-slate-400 block mb-0.5">الرقم الأرشيفي:</span>
-<span id="modal-code" class="font-bold text-slate-800 dark:text-slate-200">-</span>
-</div>
-</div>
-<div>
-<h4 class="text-sm font-bold text-slate-800 dark:text-slate-200 mb-1">تفاصيل ومحتوى المستند:</h4>
-<p id="modal-desc" class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-تفاصيل الوثيقة تظهر هنا...
-</p>
-</div>
-</div>
-
-<div id="doc-panel-transcription" class="hidden-view">
-<p id="modal-transcription" class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed whitespace-pre-line"></p>
-</div>
-<div id="doc-panel-translation" class="hidden-view">
-<p id="modal-translation" class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed whitespace-pre-line"></p>
-</div>
-<div id="doc-panel-notes" class="hidden-view">
-<p id="modal-notes" class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed whitespace-pre-line"></p>
-</div>
-<div id="doc-panel-research" class="hidden-view">
-<p id="modal-research" class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed whitespace-pre-line"></p>
-</div>
-
-</div>
-<!-- Modal Footer -->
-<div class="p-4 bg-archive-50 dark:bg-slate-900/80 border-t border-archive-100 dark:border-slate-800 flex items-center justify-between">
-<button onclick="copyDocReference()" class="px-4 py-2 bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-semibold hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors">
-نسخ الرقم المرجعي
-</button>
-<button onclick="closeModal(); showToast('جاري فتح ملف PDF عالي الدقة...');" class="px-5 py-2 bg-archive-600 hover:bg-archive-500 text-white rounded-xl text-xs font-bold shadow-md transition-colors">
-تحميل الوثيقة بدقة HD
-</button>
-</div>
-</div>
-</div>
-
-<!-- Toast Notification -->
-<div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-400 ease-out pointer-events-none">
-<div class="bg-slate-900 text-white dark:bg-archive-600 px-5 py-3.5 rounded-2xl shadow-xl flex items-center space-x-3 space-x-reverse border border-slate-700 dark:border-archive-500">
-<svg class="w-5 h-5 text-archive-400 dark:text-archive-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-<span id="toast-msg" class="text-xs font-semibold">إشعار النظام</span>
-</div>
-</div>
-
-<!-- Footer -->
-<footer class="mt-auto border-t border-archive-200/60 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 py-8">
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
-<p class="text-xs text-slate-500 dark:text-slate-400 text-center md:text-right">
-جميع الحقوق محفوظة © 2026 منصة الأرشيف التاريخي - أنصار فرنسا.
-</p>
-<div class="flex items-center space-x-6 space-x-reverse text-xs font-medium text-slate-500 dark:text-slate-400">
-<a href="#" onclick="showToast('سياسة الخصوصية'); return false;" class="hover:text-archive-600 transition-colors">سياسة الاستخدام</a>
-<a href="#" onclick="showToast('الشروط والأحكام'); return false;" class="hover:text-archive-600 transition-colors">معايير التوثيق</a>
-<a href="#" onclick="switchTab('hero')" class="hover:text-archive-600 transition-colors">الرئيسية</a>
-</div>
-</div>
-</footer>
-
 <script>
-// Fallback data — used only if the database is unreachable or empty,
-// so the site never breaks for visitors.
-const fallbackData = [
-  { id: 'doc-1', title: 'مراسلة رسمية بشأن التنسيق الأرشيفي', category: 'مراسلات', date: '15 مايو 1956', code: 'AF-1956-001', image: 'https://placehold.co/600x400/8c5e38/ffffff?text=وثيقة+مراسلة+1956', desc: 'خطاب رسمي يتضمن التوجيهات العامة بضرورة حصر ونقل جميع المستندات والمراسلات إلى المركز الوطني للأرشيف.', transcription: null, translation: null, notes: null, research: null, verification: 'قيد المراجعة' },
-  { id: 'doc-2', title: 'قرار لجنة التوثيق والمعاهدات', category: 'قرارات', date: '10 سبتمبر 1958', code: 'AF-1958-042', image: 'https://placehold.co/600x400/734d33/ffffff?text=قرار+رسمي+1958', desc: 'نص القرار النهائي القاضي باعتماد آلية جديدة لفرز الوثائق التاريخية وتصنيفها حسب الأهمية وحفظها في الخزائن.', transcription: null, translation: null, notes: null, research: null, verification: 'قيد المراجعة' },
-  { id: 'doc-3', title: 'صورة أرشيفية لاجتماع الأعضاء', category: 'صور', date: '22 مارس 1962', code: 'AF-1962-108', image: 'https://placehold.co/600x400/5f402d/ffffff?text=صورة+أرشيفية+1962', desc: 'صورة نادرة ذات دقة عالية توثق لحظة التوقيع على محاضر استلام وتسليم السجلات والوثائق الرسمية.', transcription: null, translation: null, notes: null, research: null, verification: 'قيد المراجعة' },
-  { id: 'doc-4', title: 'تقرير ميداني عن حفظ المخطوطات', category: 'مذكرات', date: '04 يناير 1960', code: 'AF-1960-019', image: 'https://placehold.co/600x400/8c5e38/ffffff?text=تقرير+ميداني+1960', desc: 'مذكرة تفصيلية تستعرض حالة الأوراق والمخطوطات القديمة وطرق معالجتها ضد التلف البيئي.', transcription: null, translation: null, notes: null, research: null, verification: 'قيد المراجعة' },
-  { id: 'doc-5', title: 'برقية عاجلة حول السجلات الدبلوماسية', category: 'مراسلات', date: '18 أغسطس 1959', code: 'AF-1959-088', image: 'https://placehold.co/600x400/734d33/ffffff?text=برقية+مراسلة+1959', desc: 'برقية موجهة إلى القيادة المركزية تتضمن تأكيد استلام الشحنة الأولى من الوثائق الدبلوماسية الرقمية.', transcription: null, translation: null, notes: null, research: null, verification: 'قيد المراجعة' },
-  { id: 'doc-6', title: 'محضر اتفاق ثنائي بين الوفود', category: 'قرارات', date: '30 نوفمبر 1961', code: 'AF-1961-205', image: 'https://placehold.co/600x400/5f402d/ffffff?text=محضر+اتفاق+1961', desc: 'محضر اجتماع يتضمن تفاصيل الاتفاقيات الثنائية والمواد القانونية المنظمة لعملية التوثيق.', transcription: null, translation: null, notes: null, research: null, verification: 'قيد المراجعة' }
-];
-
-let archiveData = [];
-let currentCategory = 'all';
-
-// Load documents from Supabase; fall back to local data if unreachable.
-async function loadArchiveData() {
-  try {
-    if (window.AFAS && window.AFAS.client) {
-      const { data, error } = await window.AFAS.client
-        .from('documents')
-        .select('*')
-        .eq('is_published', true);
-      if (!error && data && data.length > 0) {
-        archiveData = data.map(d => ({
-          id: d.id,
-          title: d.title,
-          category: d.category,
-          date: d.event_date_label || '',
-          code: d.reference_code || '',
-          image: d.cover_image || '',
-          desc: d.description || '',
-          transcription: d.transcription_text,
-          translation: d.translation_text,
-          notes: d.editorial_notes,
-          research: d.research_notes,
-          verification: d.verification_status || 'قيد المراجعة'
-        }));
-        return;
-      }
-    }
-  } catch (e) {
-    console.warn('تعذر الاتصال بقاعدة البيانات، سيتم استخدام البيانات المحلية:', e);
-  }
-  archiveData = fallbackData;
+function show(id) {
+  ['view-viewer','view-pending','view-workspace'].forEach(v => {
+    document.getElementById(v).classList.add('hidden-view');
+  });
+  document.getElementById(id).classList.remove('hidden-view');
 }
 
-// Smooth Tab Switch Logic
-function switchTab(tabId, element) {
-  const views = document.querySelectorAll('.view-section');
-  views.forEach(v => {
-    v.classList.remove('active-view');
-    v.classList.add('hidden-view');
-  });
-  const targetView = document.getElementById(`view-${tabId}`);
-  if (targetView) {
-    targetView.classList.remove('hidden-view');
-    void targetView.offsetWidth;
-    targetView.classList.add('active-view');
-  }
-  const navBtn = element || document.querySelector(`.nav-btn[data-tab="${tabId}"]`);
-  if (navBtn) {
-    const indicator = document.getElementById('tab-indicator');
-    const parent = navBtn.parentElement;
-    const btnRect = navBtn.getBoundingClientRect();
-    const parentRect = parent.getBoundingClientRect();
-    indicator.style.width = `${btnRect.width}px`;
-    indicator.style.transform = `translateX(-${btnRect.left - parentRect.left - 6}px)`;
-    document.querySelectorAll('.nav-btn').forEach(btn => {
-      btn.classList.remove('text-archive-800', 'dark:text-white');
-      btn.classList.add('text-slate-600', 'dark:text-slate-400');
-    });
-    navBtn.classList.remove('text-slate-600', 'dark:text-slate-400');
-    navBtn.classList.add('text-archive-800', 'dark:text-white');
-  }
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+function statusBadge(status) {
+  return `<span class="badge badge-${status}">${status}</span>`;
 }
 
-function renderArchiveItems() {
-  const grid = document.getElementById('archive-grid');
-  const searchVal = (document.getElementById('archive-search')?.value || '').toLowerCase();
-  const filtered = archiveData.filter(item => {
-    const matchesCategory = (currentCategory === 'all' || item.category === currentCategory);
-    const matchesSearch = item.title.toLowerCase().includes(searchVal) || (item.code || '').toLowerCase().includes(searchVal);
-    return matchesCategory && matchesSearch;
-  });
-  grid.innerHTML = '';
-  if (filtered.length === 0) {
-    grid.innerHTML = `
-      <div class="col-span-full py-12 text-center text-slate-400 animate-fade-in">
-        <svg class="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-        <p class="text-sm font-semibold">لم يتم العثور على وثائق تطابق خيارات البحث</p>
-      </div>
-    `;
+let allDocs = [];
+let editingDocId = null;
+
+async function refreshApp() {
+  const profile = await AFAS.getMyProfile();
+  if (!profile) {
+    document.getElementById('view-login').classList.remove('hidden-view');
+    document.getElementById('view-app').classList.add('hidden-view');
     return;
   }
-  filtered.forEach((item, index) => {
-    const card = document.createElement('div');
-    card.className = 'interactive-card bg-white dark:bg-slate-900 rounded-2xl border border-archive-200/60 dark:border-slate-800 overflow-hidden shadow-sm flex flex-col opacity-0 transform translate-y-4';
-    card.style.animation = `fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) ${index * 0.08}s forwards`;
-    card.innerHTML = `
-      <div class="relative h-44 overflow-hidden bg-archive-100 dark:bg-slate-800">
-        <img src="${item.image}" alt="${item.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-        <span class="absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-bold bg-slate-900/70 text-white backdrop-blur-md">
-          ${item.category}
-        </span>
-      </div>
-      <div class="p-5 flex-grow flex flex-col justify-between space-y-4">
-        <div>
-          <span class="text-[11px] font-bold text-archive-600 dark:text-archive-400 block mb-1">${item.code} • ${item.date}</span>
-          <h3 class="text-base font-bold text-slate-900 dark:text-slate-100 leading-snug hover:text-archive-600 dark:hover:text-archive-400 transition-colors cursor-pointer" onclick="openModalById('${item.id}')">
-            ${item.title}
-          </h3>
-          <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mt-2 leading-relaxed">
-            ${item.desc}
-          </p>
-        </div>
-        <button onclick="openModalById('${item.id}')" class="w-full py-2.5 bg-archive-50 dark:bg-slate-800/80 hover:bg-archive-500 hover:text-white dark:hover:bg-archive-600 text-archive-800 dark:text-archive-300 font-bold text-xs rounded-xl transition-all duration-300 flex items-center justify-center gap-1.5">
-          <span>استعراض الوثيقة</span>
-          <svg class="w-4 h-4 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-        </button>
-      </div>
-    `;
-    grid.appendChild(card);
-  });
-}
+  document.getElementById('view-login').classList.add('hidden-view');
+  document.getElementById('view-app').classList.remove('hidden-view');
+  document.getElementById('me-email').textContent = profile.email;
+  document.getElementById('me-role').textContent = `${profile.role} · ${profile.status}`;
 
-function setFilter(cat, btn) {
-  currentCategory = cat;
-  document.querySelectorAll('.filter-pill').forEach(b => {
-    b.classList.remove('bg-archive-600', 'text-white', 'shadow-md');
-    b.classList.add('bg-white', 'dark:bg-slate-900', 'text-slate-600', 'dark:text-slate-300');
-  });
-  btn.classList.remove('bg-white', 'dark:bg-slate-900', 'text-slate-600', 'dark:text-slate-300');
-  btn.classList.add('bg-archive-600', 'text-white', 'shadow-md');
-  renderArchiveItems();
-}
+  const isSuperAdmin = profile.role === 'super_admin' && profile.status === 'approved';
+  const isApprovedEditor = profile.role === 'editor' && profile.status === 'approved';
 
-function filterCategoryAndOpen(cat) {
-  switchTab('archive');
-  const targetPill = Array.from(document.querySelectorAll('.filter-pill')).find(p => p.textContent.trim().includes(cat));
-  if (targetPill) {
-    setFilter(cat, targetPill);
-  }
-}
-
-const VERIFICATION_STYLES = {
-  'موثق ومعتمد': 'bg-emerald-100 text-emerald-800',
-  'قيد المراجعة': 'bg-amber-100 text-amber-800',
-  'غير مؤكد': 'bg-red-100 text-red-700'
-};
-
-function showModalTab(tab) {
-  ['source', 'transcription', 'translation', 'notes', 'research'].forEach(t => {
-    document.getElementById(`doc-panel-${t}`).classList.toggle('hidden-view', t !== tab);
-    document.getElementById(`doc-tab-btn-${t}`).classList.toggle('active', t === tab);
-  });
-}
-
-function openModalById(id) {
-  const item = archiveData.find(d => d.id === id);
-  if (!item) return;
-  document.getElementById('modal-title').textContent = item.title;
-  document.getElementById('modal-badge').textContent = item.category;
-  document.getElementById('modal-date').textContent = item.date;
-  document.getElementById('modal-code').textContent = item.code;
-  document.getElementById('modal-desc').textContent = item.desc;
-  document.getElementById('modal-img').src = item.image;
-  document.getElementById('modal-transcription').textContent = item.transcription || 'لم تتم إضافة التفريغ النصي لهذه الوثيقة بعد.';
-  document.getElementById('modal-translation').textContent = item.translation || 'لم تتم إضافة الترجمة العربية لهذه الوثيقة بعد.';
-  document.getElementById('modal-notes').textContent = item.notes || 'لا توجد هوامش تحقيق مضافة بعد.';
-  document.getElementById('modal-research').textContent = item.research || 'لا توجد دراسة تحليلية مضافة بعد.';
-
-  const verifEl = document.getElementById('modal-verification');
-  verifEl.textContent = item.verification || 'قيد المراجعة';
-  verifEl.className = 'px-3 py-1 rounded-full text-xs font-bold ' + (VERIFICATION_STYLES[item.verification] || VERIFICATION_STYLES['قيد المراجعة']);
-
-  showModalTab('source');
-
-  const modal = document.getElementById('doc-modal');
-  const content = document.getElementById('modal-content');
-  modal.classList.remove('pointer-events-none', 'opacity-0');
-  modal.classList.add('opacity-100');
-  content.classList.remove('scale-95');
-  content.classList.add('scale-100');
-}
-
-function closeModal() {
-  const modal = document.getElementById('doc-modal');
-  const content = document.getElementById('modal-content');
-  content.classList.remove('scale-100');
-  content.classList.add('scale-95');
-  modal.classList.remove('opacity-100');
-  modal.classList.add('opacity-0', 'pointer-events-none');
-}
-
-function copyDocReference() {
-  const code = document.getElementById('modal-code').textContent;
-  navigator.clipboard.writeText(code).then(() => {
-    showToast('تم نسخ الرقم المرجعي للوثيقة إلى الحافظة');
-  }).catch(() => {
-    showToast('الرقم المرجعي: ' + code);
-  });
-}
-
-function toggleDarkMode() {
-  document.documentElement.classList.toggle('dark');
-  const isDark = document.documentElement.classList.contains('dark');
-  localStorage.setItem('theme', isDark ? 'dark' : 'light');
-  showToast(isDark ? 'تم تفعيل الوضع الليلي' : 'تم تفعيل الوضع النهارى');
-}
-
-function toggleMobileMenu() {
-  const menu = document.getElementById('mobile-menu');
-  if (menu.style.maxHeight && menu.style.maxHeight !== '0px') {
-    menu.style.maxHeight = '0px';
+  if (isSuperAdmin || isApprovedEditor) {
+    show('view-workspace');
+    document.getElementById('admin-only-sections').classList.toggle('hidden-view', !isSuperAdmin);
+    loadDocuments();
+    if (isSuperAdmin) loadAdminData();
+  } else if (profile.role === 'editor' && profile.status === 'pending') {
+    show('view-pending');
   } else {
-    menu.style.maxHeight = menu.scrollHeight + 'px';
+    show('view-viewer');
   }
 }
 
-function showToast(message) {
-  const toast = document.getElementById('toast');
-  const msg = document.getElementById('toast-msg');
-  msg.textContent = message;
-  toast.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
-  toast.classList.add('translate-y-0', 'opacity-100');
-  setTimeout(() => {
-    toast.classList.remove('translate-y-0', 'opacity-100');
-    toast.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
-  }, 3000);
+async function handleLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  const { error } = await AFAS.signInWithEmail(email, password);
+  const errBox = document.getElementById('login-error');
+  if (error) {
+    errBox.textContent = 'فشل الدخول: تحقق من البريد وكلمة المرور';
+    errBox.classList.remove('hidden-view');
+    return;
+  }
+  errBox.classList.add('hidden-view');
+  refreshApp();
 }
 
-window.onload = async function () {
-  if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-    document.documentElement.classList.add('dark');
+async function handleSignup() {
+  const email = document.getElementById('signup-email').value.trim();
+  const password = document.getElementById('signup-password').value;
+  const { error } = await AFAS.signUpWithEmail(email, password);
+  const errBox = document.getElementById('login-error');
+  if (error) {
+    errBox.textContent = 'تعذر إنشاء الحساب: ' + error.message;
+    errBox.classList.remove('hidden-view');
+    return;
   }
-
-  const firstTab = document.querySelector('.nav-btn[data-tab="hero"]');
-  if (firstTab) {
-    setTimeout(() => switchTab('hero', firstTab), 50);
-  }
-
-  await loadArchiveData();
-  renderArchiveItems();
+  errBox.textContent = 'تم إنشاء الحساب! تحقق من بريدك لتأكيده ثم سجّل الدخول.';
+  errBox.classList.remove('hidden-view');
 }
+
+async function handleLogout() {
+  await AFAS.signOut();
+  refreshApp();
+}
+
+async function applyEditor() {
+  await AFAS.applyAsEditor();
+  refreshApp();
+}
+
+async function loadAdminData() {
+  const pending = await AFAS.listPendingEditors();
+  document.getElementById('pending-list').innerHTML = pending.length ? pending.map(p => `
+    <div class="flex items-center justify-between border border-archive-100 rounded-xl p-3">
+      <span>${p.email}</span>
+      <div class="flex gap-2">
+        <button onclick="approveEditor('${p.id}')" class="btn-primary !py-1.5 !px-3 !text-xs">اعتماد</button>
+        <button onclick="rejectEditor('${p.id}')" class="btn-ghost !py-1.5 !px-3 !text-xs">رفض</button>
+      </div>
+    </div>`).join('') : '<p class="text-slate-400">لا توجد طلبات معلّقة</p>';
+
+  const editors = await AFAS.listAllEditorsAndAdmins();
+  document.getElementById('editors-list').innerHTML = editors.map(e => `
+    <div class="flex items-center justify-between border border-archive-100 rounded-xl p-3">
+      <span>${e.email} <span class="text-slate-400">(${e.role})</span></span>
+      <div class="flex items-center gap-2">
+        ${statusBadge(e.status)}
+        ${e.role !== 'super_admin' ? `<button onclick="suspendEditor('${e.id}')" class="btn-ghost !py-1.5 !px-3 !text-xs">${e.status === 'suspended' ? 'إعادة تفعيل' : 'طرد/تعليق'}</button>` : ''}
+      </div>
+    </div>`).join('');
+
+  const audit = await AFAS.getAuditLog(50);
+  document.getElementById('audit-list').innerHTML = audit.length ? audit.map(a => `
+    <div class="border-b border-archive-100 pb-1">${new Date(a.created_at).toLocaleString('ar')} — <b>${a.actor_email || 'نظام'}</b> — ${a.action} ${a.target ? '→ ' + a.target : ''}</div>
+  `).join('') : '<p class="text-slate-400">لا يوجد سجل بعد</p>';
+}
+
+async function approveEditor(id) { await AFAS.setEditorStatus(id, 'approved'); loadAdminData(); }
+async function rejectEditor(id) { await AFAS.setEditorStatus(id, 'rejected'); loadAdminData(); }
+async function suspendEditor(id) { await AFAS.setEditorStatus(id, 'suspended'); loadAdminData(); }
+
+// ---------- Documents manager ----------
+
+async function loadDocuments() {
+  allDocs = await AFAS.listAllDocuments();
+  const list = document.getElementById('doc-list');
+  list.innerHTML = allDocs.length ? allDocs.map(d => `
+    <div class="flex items-center justify-between border border-archive-100 rounded-xl p-3 gap-2 flex-wrap">
+      <div>
+        <p class="font-semibold">${d.title}</p>
+        <p class="text-xs text-slate-400">${d.category} · ${d.event_date_label || ''} · ${d.is_published ? '<span class="text-emerald-600 font-bold">منشورة</span>' : '<span class="text-amber-600 font-bold">مسودة</span>'}</p>
+      </div>
+      <div class="flex gap-2">
+        <button onclick="editDoc('${d.id}')" class="btn-ghost !py-1.5 !px-3 !text-xs">تعديل</button>
+        <button onclick="togglePublishDoc('${d.id}', ${!d.is_published})" class="btn-ghost !py-1.5 !px-3 !text-xs">${d.is_published ? 'إخفاء' : 'نشر'}</button>
+      </div>
+    </div>`).join('') : '<p class="text-slate-400">لا توجد وثائق بعد</p>';
+}
+
+function editDoc(id) {
+  const doc = allDocs.find(d => d.id === id);
+  if (doc) openDocForm(doc);
+}
+
+async function togglePublishDoc(id, newState) {
+  await AFAS.togglePublish(id, newState);
+  loadDocuments();
+}
+
+function openDocForm(doc) {
+  editingDocId = doc ? doc.id : null;
+  document.getElementById('doc-form-title').textContent = doc ? 'تعديل الوثيقة' : 'إضافة وثيقة جديدة';
+  document.getElementById('doc-title').value = doc?.title || '';
+  document.getElementById('doc-category').value = doc?.category || 'مراسلات';
+  document.getElementById('doc-date-label').value = doc?.event_date_label || '';
+  document.getElementById('doc-date').value = doc?.event_date || '';
+  document.getElementById('doc-code').value = doc?.reference_code || '';
+  document.getElementById('doc-image').value = doc?.cover_image || '';
+  document.getElementById('doc-desc').value = doc?.description || '';
+  document.getElementById('doc-transcription').value = doc?.transcription_text || '';
+  document.getElementById('doc-translation').value = doc?.translation_text || '';
+  document.getElementById('doc-notes').value = doc?.editorial_notes || '';
+  document.getElementById('doc-research').value = doc?.research_notes || '';
+  document.getElementById('doc-verification').value = doc?.verification_status || 'قيد المراجعة';
+  document.getElementById('doc-published').checked = doc?.is_published || false;
+  document.getElementById('doc-form-card').classList.remove('hidden-view');
+  document.getElementById('doc-form-card').scrollIntoView({ behavior: 'smooth' });
+}
+
+function closeDocForm() {
+  editingDocId = null;
+  document.getElementById('doc-form-card').classList.add('hidden-view');
+}
+
+async function saveDocForm() {
+  const payload = {
+    title: document.getElementById('doc-title').value.trim(),
+    category: document.getElementById('doc-category').value,
+    event_date_label: document.getElementById('doc-date-label').value.trim() || null,
+    event_date: document.getElementById('doc-date').value || null,
+    reference_code: document.getElementById('doc-code').value.trim() || null,
+    cover_image: document.getElementById('doc-image').value.trim() || null,
+    description: document.getElementById('doc-desc').value.trim() || null,
+    transcription_text: document.getElementById('doc-transcription').value.trim() || null,
+    translation_text: document.getElementById('doc-translation').value.trim() || null,
+    editorial_notes: document.getElementById('doc-notes').value.trim() || null,
+    research_notes: document.getElementById('doc-research').value.trim() || null,
+    verification_status: document.getElementById('doc-verification').value,
+    is_published: document.getElementById('doc-published').checked
+  };
+  if (!payload.title) { alert('العنوان مطلوب'); return; }
+  if (editingDocId) payload.id = editingDocId;
+  try {
+    await AFAS.saveDocument(payload);
+    closeDocForm();
+    loadDocuments();
+  } catch (e) {
+    alert('حدث خطأ أثناء الحفظ: ' + e.message);
+  }
+}
+
+refreshApp();
 </script>
 </body>
 </html>
