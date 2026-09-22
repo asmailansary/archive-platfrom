@@ -752,7 +752,7 @@ function showToast(message) {
   }, 3000);
 }
 
-window.onload = async function () {
+window.onload = function () {
   if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
     document.documentElement.classList.add('dark');
   }
@@ -762,8 +762,22 @@ window.onload = async function () {
     setTimeout(() => switchTab('hero', firstTab), 50);
   }
 
-  await loadArchiveData();
+  // Show the local baseline documents immediately — never leave the
+  // page blank while we wait on the network/database.
+  archiveData = fallbackData;
   renderArchiveItems();
+
+  // Then try to fetch the live list from the database in the
+  // background (with its own timeout), and refresh the grid if it
+  // succeeds. If it fails, is slow, or hangs, the baseline above
+  // is still shown, so the visitor is never left with a blank page.
+  const withTimeout = (promise, ms) => Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), ms))
+  ]);
+  withTimeout(loadArchiveData(), 8000)
+    .then(() => renderArchiveItems())
+    .catch((e) => console.warn('تعذر تحديث الوثائق من قاعدة البيانات في الوقت المناسب:', e));
 }
 </script>
 </body>
