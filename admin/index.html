@@ -25,57 +25,70 @@
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="../supabase-client.js"></script>
+<script src="../translations.js"></script>
 <style>
   body { font-family: 'Tajawal', sans-serif; }
   .card { background: white; border-radius: 1.25rem; border: 1px solid #ede0ca; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
-  .btn-primary { background:#aa7843; color:#fff; padding:.65rem 1.5rem; border-radius:.9rem; font-weight:700; font-size:.85rem; }
+  .btn-primary { background:#aa7843; color:#fff; padding:.65rem 1.5rem; border-radius:.9rem; font-weight:700; font-size:.85rem; transition: background .2s; }
   .btn-primary:hover { background:#8c5e38; }
-  .btn-ghost { background:#f7f2e7; color:#734d33; padding:.65rem 1.5rem; border-radius:.9rem; font-weight:700; font-size:.85rem; }
+  .btn-primary:disabled, .btn-ghost:disabled { opacity:.55; cursor:not-allowed; }
+  .btn-ghost { background:#f7f2e7; color:#734d33; padding:.65rem 1.5rem; border-radius:.9rem; font-weight:700; font-size:.85rem; transition: background .2s; }
   .btn-ghost:hover { background:#ede0ca; }
-  .input { width:100%; padding:.75rem 1rem; border-radius:.75rem; border:1px solid #ede0ca; font-size:.9rem; }
+  .btn-danger { background:#fee2e2; color:#991b1b; padding:.65rem 1.5rem; border-radius:.9rem; font-weight:700; font-size:.85rem; }
+  .btn-danger:hover { background:#fecaca; }
+  .input { width:100%; padding:.75rem 1rem; border-radius:.75rem; border:1px solid #ede0ca; font-size:.9rem; background:#fff; }
+  .input:focus { outline:none; border-color:#bf9053; box-shadow:0 0 0 3px rgba(191,144,83,.2); }
   .badge { padding:.2rem .7rem; border-radius:9999px; font-size:.7rem; font-weight:700; }
   .badge-pending { background:#fef3c7; color:#92400e; }
   .badge-approved { background:#d1fae5; color:#065f46; }
   .badge-rejected, .badge-suspended { background:#fee2e2; color:#991b1b; }
-  .hidden-view { display:none; }
+  .hidden-view { display:none !important; }
+  .lbl { display:block; font-size:.75rem; color:#64748b; margin-bottom:.25rem; font-weight:600; }
+  .hint { font-size:.75rem; color:#94a3b8; }
+  .form-section { font-weight:800; color:#734d33; font-size:.9rem; padding-top:.75rem; border-top:1px dashed #ede0ca; }
+  .tab-btn { padding:.6rem 1.1rem; border-radius:.9rem; font-weight:700; font-size:.85rem; color:#734d33; background:#f7f2e7; white-space:nowrap; transition: all .2s; }
+  .tab-btn:hover { background:#ede0ca; }
+  .tab-btn.active { background:#aa7843; color:#fff; box-shadow:0 2px 8px rgba(170,120,67,.35); }
+  .img-preview { width:9rem; height:6.5rem; border-radius:.9rem; border:1px dashed #dfc8a3; background:#fdfbf7; overflow:hidden; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .img-preview img { width:100%; height:100%; object-fit:cover; }
+  .img-preview span { font-size:.7rem; color:#94a3b8; text-align:center; padding:.25rem; }
+  .text-row { border:1px solid #ede0ca; border-radius:1rem; padding:.9rem; background:#fff; }
+  .text-row.changed { border-color:#bf9053; background:#fffaf2; }
+  input[type=range] { accent-color:#aa7843; }
+  #notify { position:fixed; bottom:1.25rem; inset-inline-start:1.25rem; z-index:100; max-width:22rem; padding:.85rem 1.1rem; border-radius:1rem; font-size:.85rem; font-weight:700; color:#fff; box-shadow:0 10px 30px rgba(0,0,0,.2); transform:translateY(140%); transition:transform .35s cubic-bezier(.16,1,.3,1); }
+  #notify.show { transform:none; }
+  #notify.ok { background:#065f46; } #notify.err { background:#991b1b; } #notify.info { background:#334155; }
 </style>
 </head>
 <body class="bg-archive-50 text-slate-800 min-h-screen flex flex-col">
 
-<header class="border-b border-archive-200/60 bg-white/80 backdrop-blur-md py-4">
-  <div class="max-w-5xl mx-auto px-4 flex items-center justify-between">
-    <div>
-      <h1 class="text-lg font-bold text-archive-800">لوحة تحكم الأرشيف <span class="text-archive-500">(AFAS)</span></h1>
+<header class="border-b border-archive-200/60 bg-white/80 backdrop-blur-md py-4 sticky top-0 z-30">
+  <div class="max-w-6xl mx-auto px-4 flex items-center justify-between gap-3">
+    <div class="min-w-0">
+      <h1 class="text-base sm:text-lg font-bold text-archive-800">لوحة تحكم الموقع <span class="text-archive-500">(AFAS)</span></h1>
       <p class="text-xs text-slate-500">دخول المسؤولين والمحررين المعتمدين</p>
     </div>
-    <a href="../index.html" class="text-xs font-semibold text-archive-600 hover:underline">عودة للموقع الرئيسي</a>
+    <a href="../index.html" class="text-xs font-semibold text-archive-600 hover:underline whitespace-nowrap">عودة للموقع الرئيسي</a>
   </div>
 </header>
 
-<main class="flex-grow max-w-5xl w-full mx-auto px-4 py-10 space-y-6">
+<main class="flex-grow max-w-6xl w-full mx-auto px-4 py-8 space-y-6">
 
-  <!-- LOGIN VIEW -->
+  <!-- LOGIN VIEW (sign-in only: accounts are created by the super admin) -->
   <div id="view-login" class="max-w-md mx-auto card p-8 space-y-5">
     <h2 class="text-xl font-bold text-center text-archive-900">تسجيل الدخول</h2>
     <div id="login-error" class="hidden-view text-xs text-red-600 bg-red-50 border border-red-200 rounded-xl p-3"></div>
-    <div class="space-y-3">
-      <input id="login-email" type="email" placeholder="البريد الإلكتروني" class="input">
-      <input id="login-password" type="password" placeholder="كلمة المرور" class="input">
-      <button onclick="handleLogin()" class="btn-primary w-full">دخول</button>
-      <button onclick="AFAS.signInWithGoogle()" class="btn-ghost w-full">الدخول عبر Google</button>
-    </div>
-    <hr class="border-archive-100">
-    <p class="text-xs text-slate-500 text-center">ليس لديك حساب؟</p>
-    <div class="space-y-3">
-      <input id="signup-email" type="email" placeholder="البريد الإلكتروني" class="input">
-      <input id="signup-password" type="password" placeholder="اختر كلمة مرور" class="input">
-      <button onclick="handleSignup()" class="btn-ghost w-full">إنشاء حساب جديد</button>
-    </div>
+    <form class="space-y-3" onsubmit="event.preventDefault(); handleLogin();">
+      <input id="login-email" type="email" autocomplete="username" placeholder="البريد الإلكتروني" class="input" required>
+      <input id="login-password" type="password" autocomplete="current-password" placeholder="كلمة المرور" class="input" required>
+      <button type="submit" class="btn-primary w-full">دخول</button>
+    </form>
+    <button onclick="AFAS.signInWithGoogle()" class="btn-ghost w-full">الدخول عبر Google</button>
   </div>
 
   <!-- LOGGED-IN SHELL -->
   <div id="view-app" class="hidden-view space-y-6">
-    <div class="card p-5 flex items-center justify-between">
+    <div class="card p-5 flex items-center justify-between gap-3 flex-wrap">
       <div>
         <p class="text-sm font-bold" id="me-email">-</p>
         <span id="me-role" class="badge badge-approved">-</span>
@@ -96,68 +109,123 @@
       <p class="text-sm text-slate-500">تم إرسال طلبك للانضمام كمحرر معتمد. سيتم تفعيل حسابك بعد موافقة المسؤول الرئيسي.</p>
     </div>
 
-    <!-- WORKSPACE: shown to approved editors AND super admin -->
-    <div id="view-workspace" class="hidden-view space-y-6">
+    <!-- WORKSPACE -->
+    <div id="view-workspace" class="hidden-view space-y-5">
 
-      <!-- Documents manager (editors + super admin) -->
-      <div class="card p-6 space-y-4">
-        <div class="flex items-center justify-between flex-wrap gap-2">
-          <h3 class="font-bold text-lg">إدارة الوثائق</h3>
-          <button onclick="openDocForm()" class="btn-primary !py-2 !px-4 !text-xs">+ إضافة وثيقة جديدة</button>
-        </div>
-        <div id="doc-list" class="space-y-2 text-sm"></div>
-      </div>
+      <nav class="flex gap-2 overflow-x-auto pb-1" id="tab-nav">
+        <button class="tab-btn" data-tab="docs" onclick="showTab('docs')">الوثائق</button>
+        <button class="tab-btn" data-tab="timeline" onclick="showTab('timeline')">الخط الزمني</button>
+        <button class="tab-btn" data-tab="figures" onclick="showTab('figures')">الشخصيات</button>
+        <button class="tab-btn super-only" data-tab="texts" onclick="showTab('texts')">نصوص الموقع</button>
+        <button class="tab-btn super-only" data-tab="images" onclick="showTab('images')">صور الموقع</button>
+        <button class="tab-btn super-only" data-tab="team" onclick="showTab('team')">الفريق والسجل</button>
+      </nav>
 
-      <!-- Add/Edit document form -->
-      <div id="doc-form-card" class="card p-6 space-y-3 hidden-view">
-        <h3 id="doc-form-title" class="font-bold text-lg">إضافة وثيقة جديدة</h3>
-        <input id="doc-title" placeholder="عنوان الوثيقة" class="input">
-        <select id="doc-category" class="input">
-          <option value="مراسلات">مراسلات</option>
-          <option value="قرارات">قرارات</option>
-          <option value="صور">صور</option>
-          <option value="مذكرات">مذكرات</option>
-        </select>
-        <div class="grid grid-cols-2 gap-3">
-          <input id="doc-date-label" placeholder="التاريخ كنص (مثال: 15 مايو 1956)" class="input">
-          <input id="doc-date" type="date" class="input">
+      <!-- ===== Documents ===== -->
+      <section id="panel-docs" class="tab-panel space-y-5">
+        <div class="card p-6 space-y-4">
+          <div class="flex items-center justify-between flex-wrap gap-2">
+            <h3 class="font-bold text-lg">إدارة الوثائق</h3>
+            <button onclick="panels.docs.open()" class="btn-primary !py-2 !px-4 !text-xs">+ إضافة وثيقة جديدة</button>
+          </div>
+          <div id="list-docs" class="space-y-2 text-sm"></div>
         </div>
-        <input id="doc-code" placeholder="الرقم الأرشيفي" class="input">
-        <input id="doc-image" placeholder="رابط صورة الغلاف" class="input">
-        <textarea id="doc-desc" placeholder="وصف مختصر يظهر في بطاقة الوثيقة" class="input" rows="2"></textarea>
-        <div>
-          <label class="text-xs text-slate-500 block mb-1">التفريغ النصي (باللغة الأصلية)</label>
-          <textarea id="doc-transcription" class="input" rows="3"></textarea>
+        <div id="form-docs" class="card p-6 space-y-3 hidden-view">
+          <h3 id="form-docs-title" class="font-bold text-lg">إضافة وثيقة جديدة</h3>
+          <div id="fields-docs" class="grid md:grid-cols-2 gap-3"></div>
+          <div class="flex gap-2 pt-2"><button onclick="panels.docs.save(this)" class="btn-primary">حفظ</button><button onclick="panels.docs.close()" class="btn-ghost">إلغاء</button></div>
         </div>
-        <div>
-          <label class="text-xs text-slate-500 block mb-1">الترجمة العربية</label>
-          <textarea id="doc-translation" class="input" rows="3"></textarea>
-        </div>
-        <div>
-          <label class="text-xs text-slate-500 block mb-1">الهوامش والتحقيق</label>
-          <textarea id="doc-notes" class="input" rows="2"></textarea>
-        </div>
-        <div>
-          <label class="text-xs text-slate-500 block mb-1">الدراسة والتحليل</label>
-          <textarea id="doc-research" class="input" rows="2"></textarea>
-        </div>
-        <select id="doc-verification" class="input">
-          <option value="قيد المراجعة">قيد المراجعة</option>
-          <option value="موثق ومعتمد">موثق ومعتمد</option>
-          <option value="غير مؤكد">غير مؤكد</option>
-        </select>
-        <label class="flex items-center gap-2 text-sm">
-          <input id="doc-published" type="checkbox">
-          <span>منشورة على الموقع (يراها الزوار)</span>
-        </label>
-        <div class="flex gap-2 pt-2">
-          <button onclick="saveDocForm()" class="btn-primary">حفظ</button>
-          <button onclick="closeDocForm()" class="btn-ghost">إلغاء</button>
-        </div>
-      </div>
+      </section>
 
-      <!-- Admin-only sections -->
-      <div id="admin-only-sections" class="hidden-view space-y-6">
+      <!-- ===== Timeline ===== -->
+      <section id="panel-timeline" class="tab-panel hidden-view space-y-5">
+        <div class="card p-6 space-y-4">
+          <div class="flex items-center justify-between flex-wrap gap-2">
+            <div><h3 class="font-bold text-lg">أحداث الخط الزمني</h3><p class="hint">يظهر الأصغر ترتيباً أولاً. يمكن ربط كل حدث بوثيقة تُفتح بزر «عرض الوثيقة المرفقة».</p></div>
+            <button onclick="panels.timeline.open()" class="btn-primary !py-2 !px-4 !text-xs">+ إضافة حدث</button>
+          </div>
+          <div id="list-timeline" class="space-y-2 text-sm"></div>
+        </div>
+        <div id="form-timeline" class="card p-6 space-y-3 hidden-view">
+          <h3 id="form-timeline-title" class="font-bold text-lg">إضافة حدث</h3>
+          <div id="fields-timeline" class="grid md:grid-cols-2 gap-3"></div>
+          <div class="flex gap-2 pt-2"><button onclick="panels.timeline.save(this)" class="btn-primary">حفظ</button><button onclick="panels.timeline.close()" class="btn-ghost">إلغاء</button></div>
+        </div>
+      </section>
+
+      <!-- ===== Figures ===== -->
+      <section id="panel-figures" class="tab-panel hidden-view space-y-5">
+        <div class="card p-6 space-y-4">
+          <div class="flex items-center justify-between flex-wrap gap-2">
+            <div><h3 class="font-bold text-lg">الشخصيات التاريخية</h3><p class="hint">لكل شخصية سيرة كاملة ووثائق مرتبطة تظهر في نافذة «عرض السيرة والوثائق المرتبطة».</p></div>
+            <button onclick="panels.figures.open()" class="btn-primary !py-2 !px-4 !text-xs">+ إضافة شخصية</button>
+          </div>
+          <div id="list-figures" class="space-y-2 text-sm"></div>
+        </div>
+        <div id="form-figures" class="card p-6 space-y-3 hidden-view">
+          <h3 id="form-figures-title" class="font-bold text-lg">إضافة شخصية</h3>
+          <div id="fields-figures" class="grid md:grid-cols-2 gap-3"></div>
+          <div class="flex gap-2 pt-2"><button onclick="panels.figures.save(this)" class="btn-primary">حفظ</button><button onclick="panels.figures.close()" class="btn-ghost">إلغاء</button></div>
+        </div>
+      </section>
+
+      <!-- ===== Site texts (super admin) ===== -->
+      <section id="panel-texts" class="tab-panel hidden-view space-y-4">
+        <div class="card p-6 space-y-3">
+          <div class="flex items-center justify-between flex-wrap gap-3">
+            <div>
+              <h3 class="font-bold text-lg">نصوص الموقع كاملة</h3>
+              <p class="hint">عدّل أي نص بالعربية والإنجليزية والفرنسية، وتحكّم في حجمه. الحقل الذي لا تغيّره يبقى على النص الافتراضي.</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <span id="texts-changed" class="text-xs font-bold text-amber-700"></span>
+              <button id="texts-save" onclick="saveTexts(this)" class="btn-primary">حفظ التغييرات</button>
+            </div>
+          </div>
+          <input id="texts-search" oninput="filterTexts()" placeholder="ابحث في النصوص (بالاسم أو المحتوى)..." class="input">
+        </div>
+        <div id="texts-groups" class="space-y-3"></div>
+      </section>
+
+      <!-- ===== Site images (super admin) ===== -->
+      <section id="panel-images" class="tab-panel hidden-view space-y-4">
+        <div class="card p-6 space-y-4">
+          <div>
+            <h3 class="font-bold text-lg">علم البانر الرئيسي</h3>
+            <p class="hint">الصورة العريضة تظهر على الحاسوب، والطولية على الجوال. إن لم ترفع صورة تبقى الافتراضية المضمّنة في الموقع.</p>
+          </div>
+          <div class="grid md:grid-cols-2 gap-4">
+            <div><span class="lbl">صورة العلم — عريضة (للحاسوب)</span><div id="img-hero_flag_wide" class="img-field" data-folder="site"></div></div>
+            <div><span class="lbl">صورة العلم — طولية (للجوال)</span><div id="img-hero_flag_tall" class="img-field" data-folder="site"></div></div>
+          </div>
+          <div class="grid md:grid-cols-2 gap-4">
+            <div><label class="lbl">حجم العلم: <b id="out-flag-size">100%</b></label><input id="flag-size" type="range" min="50" max="200" step="5" value="100" class="w-full" oninput="$('out-flag-size').textContent=this.value+'%'"></div>
+            <div><label class="lbl">وضوح العلم: <b id="out-flag-opacity">الافتراضي</b></label><input id="flag-opacity" type="range" min="5" max="100" step="5" value="42" class="w-full" oninput="$('out-flag-opacity').textContent=this.value+'%'; this.dataset.touched='1'"></div>
+          </div>
+          <div class="flex gap-2"><button onclick="saveFlag(this)" class="btn-primary">حفظ العلم</button><button onclick="resetFlag(this)" class="btn-ghost">استعادة الافتراضي</button></div>
+        </div>
+        <div class="card p-6 space-y-4">
+          <div>
+            <h3 class="font-bold text-lg">شعار الموقع</h3>
+            <p class="hint">يظهر بجانب اسم الموقع في الترويسة. يفضّل صورة مربعة بخلفية شفافة (PNG أو WebP).</p>
+          </div>
+          <div id="img-site_logo" class="img-field" data-folder="site"></div>
+          <div><label class="lbl">حجم الشعار: <b id="out-logo-size">100%</b></label><input id="logo-size" type="range" min="50" max="160" step="5" value="100" class="w-full" oninput="$('out-logo-size').textContent=this.value+'%'"></div>
+          <div class="flex gap-2"><button onclick="saveLogo(this)" class="btn-primary">حفظ الشعار</button><button onclick="resetLogo(this)" class="btn-ghost">استعادة الافتراضي</button></div>
+        </div>
+        <p class="hint px-1">صور الوثائق تُرفع من تبويب «الوثائق»، وصور الشخصيات من تبويب «الشخصيات».</p>
+      </section>
+
+      <!-- ===== Team & audit (super admin) ===== -->
+      <section id="panel-team" class="tab-panel hidden-view space-y-6">
+        <div class="card p-6 space-y-2 bg-archive-50">
+          <h3 class="font-bold text-lg">كيف تضيف محرراً جديداً؟</h3>
+          <ol class="text-sm text-slate-600 list-decimal pr-5 space-y-1">
+            <li>من لوحة Supabase: Authentication ← Users ← Add user، وأنشئ حساب المحرر بالبريد وكلمة المرور.</li>
+            <li>يدخل المحرر من هذه الصفحة ويضغط «التقدم كمحرر».</li>
+            <li>يظهر طلبه هنا في الأسفل، وتعتمده بضغطة زر.</li>
+          </ol>
+        </div>
         <div class="card p-6 space-y-4">
           <h3 class="font-bold text-lg">طلبات المحررين المعلّقة</h3>
           <div id="pending-list" class="space-y-3 text-sm"></div>
@@ -170,46 +238,576 @@
           <h3 class="font-bold text-lg">سجل المراجعة (Audit Log)</h3>
           <div id="audit-list" class="space-y-2 text-xs max-h-96 overflow-y-auto"></div>
         </div>
-      </div>
+      </section>
     </div>
   </div>
 </main>
 
+<div id="notify" class="info"></div>
+
 <script>
-function show(id) {
-  ['view-viewer','view-pending','view-workspace'].forEach(v => {
-    document.getElementById(v).classList.add('hidden-view');
+// =====================================================================
+// Helpers
+// =====================================================================
+const $ = (id) => document.getElementById(id);
+function esc(v) {
+  return String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+let _notifyTimer;
+function notify(msg, kind = 'info') {
+  const n = $('notify');
+  n.textContent = msg;
+  n.className = kind + ' show';
+  clearTimeout(_notifyTimer);
+  _notifyTimer = setTimeout(() => n.classList.remove('show'), kind === 'err' ? 6000 : 3000);
+}
+async function withBusy(btn, fn) {
+  const label = btn ? btn.textContent : '';
+  if (btn) { btn.disabled = true; btn.textContent = 'جارٍ الحفظ...'; }
+  try { return await fn(); }
+  finally { if (btn) { btn.disabled = false; btn.textContent = label; } }
+}
+function errMsg(e) {
+  const m = (e && (e.message || e.error_description)) || String(e);
+  if (/row-level security|permission denied|violates/i.test(m)) return 'لا تملك صلاحية لهذه العملية (' + m + ')';
+  if (/relation .* does not exist|schema cache|Could not find/i.test(m)) return 'قاعدة البيانات تحتاج تشغيل ملف supabase-cms-setup.sql أولاً (' + m + ')';
+  if (/Bucket not found/i.test(m)) return 'خزنة الصور غير موجودة — شغّل ملف supabase-cms-setup.sql (' + m + ')';
+  return m;
+}
+
+// =====================================================================
+// Image field widget: "insert a photo from the phone"
+// =====================================================================
+function imageFieldHtml(id, folder) {
+  return `<div class="img-field flex items-center gap-3 flex-wrap" id="${id}" data-folder="${esc(folder)}">
+    <div class="img-preview"><img alt="" class="hidden-view"><span>لا توجد صورة</span></div>
+    <div class="space-y-2">
+      <label class="btn-ghost inline-block cursor-pointer text-center">📷 إدراج صورة من الجوال
+        <input type="file" accept="image/*" class="hidden-view" onchange="uploadFromInput(this)">
+      </label>
+      <div><button type="button" class="text-xs text-red-600 hover:underline" onclick="clearImageField('${id}')">إزالة الصورة</button></div>
+      <p class="img-status text-xs text-slate-500"></p>
+    </div>
+    <input type="hidden" class="img-value">
+  </div>`;
+}
+function initImageFields() {
+  document.querySelectorAll('.img-field:empty').forEach(el => {
+    el.outerHTML = imageFieldHtml(el.id, el.dataset.folder || 'misc');
   });
-  document.getElementById(id).classList.remove('hidden-view');
+}
+function setImageField(id, url) {
+  const root = $(id); if (!root) return;
+  root.querySelector('.img-value').value = url || '';
+  const img = root.querySelector('.img-preview img');
+  const ph = root.querySelector('.img-preview span');
+  if (url) { img.src = url; img.classList.remove('hidden-view'); ph.classList.add('hidden-view'); }
+  else { img.removeAttribute('src'); img.classList.add('hidden-view'); ph.classList.remove('hidden-view'); }
+  root.querySelector('.img-status').textContent = '';
+}
+function getImageField(id) { const r = $(id); return r ? r.querySelector('.img-value').value : ''; }
+function clearImageField(id) { setImageField(id, ''); }
+async function uploadFromInput(input) {
+  const root = input.closest('.img-field');
+  const status = root.querySelector('.img-status');
+  const file = input.files && input.files[0];
+  if (!file) return;
+  status.textContent = 'جارٍ ضغط الصورة ورفعها...';
+  status.className = 'img-status text-xs text-slate-500';
+  try {
+    const url = await AFAS.uploadImage(file, root.dataset.folder || 'misc');
+    setImageField(root.id, url);
+    status.textContent = 'تم رفع الصورة ✓ (اضغط «حفظ» لتثبيتها)';
+    status.className = 'img-status text-xs text-emerald-700 font-bold';
+  } catch (e) {
+    status.textContent = 'فشل الرفع: ' + errMsg(e);
+    status.className = 'img-status text-xs text-red-600 font-bold';
+  } finally {
+    input.value = '';
+  }
 }
 
-function statusBadge(status) {
-  return `<span class="badge badge-${status}">${status}</span>`;
+// =====================================================================
+// Schema-driven forms (documents / timeline / figures)
+// =====================================================================
+const CATEGORIES = ['مراسلات', 'قرارات', 'صور', 'مذكرات'];
+const VERIFICATIONS = ['قيد المراجعة', 'موثق ومعتمد', 'غير مؤكد'];
+
+const NEW_DOC_COLS = ['title_en', 'title_fr', 'description_en', 'description_fr', 'event_date_label_en', 'event_date_label_fr', 'translation_en_text'];
+
+const DOC_SCHEMA = [
+  { type: 'section', label: 'البيانات الأساسية' },
+  { k: 'title', type: 'text', label: 'عنوان الوثيقة (العربية) *', full: true },
+  { k: 'category', type: 'select', label: 'التصنيف', options: CATEGORIES },
+  { k: 'reference_code', type: 'text', label: 'الرقم الأرشيفي', dir: 'ltr' },
+  { k: 'event_date_label', type: 'text', label: 'التاريخ كنص (مثال: 15 مايو 1956)' },
+  { k: 'event_date', type: 'date', label: 'التاريخ الفعلي (للفرز)' },
+  { k: 'cover_image', type: 'image', label: 'صورة الغلاف', folder: 'documents', full: true },
+  { k: 'description', type: 'textarea', rows: 2, label: 'وصف مختصر يظهر في بطاقة الوثيقة (العربية)', full: true },
+  { type: 'section', label: 'ترجمات بيانات البطاقة (اختيارية — لتظهر الوثيقة بالإنجليزية والفرنسية)' },
+  { k: 'title_en', type: 'text', label: 'العنوان — English', dir: 'ltr' },
+  { k: 'title_fr', type: 'text', label: 'العنوان — Français', dir: 'ltr' },
+  { k: 'event_date_label_en', type: 'text', label: 'التاريخ كنص — English', dir: 'ltr' },
+  { k: 'event_date_label_fr', type: 'text', label: 'التاريخ كنص — Français', dir: 'ltr' },
+  { k: 'description_en', type: 'textarea', rows: 2, label: 'الوصف — English', dir: 'ltr' },
+  { k: 'description_fr', type: 'textarea', rows: 2, label: 'الوصف — Français', dir: 'ltr' },
+  { type: 'section', label: 'محتوى الوثيقة' },
+  { k: 'transcription_text', type: 'textarea', rows: 4, label: 'التفريغ النصي (باللغة الأصلية)', full: true, dir: 'auto' },
+  { k: 'translation_text', type: 'textarea', rows: 4, label: 'الترجمة إلى العربية', full: true },
+  { k: 'translation_en_text', type: 'textarea', rows: 4, label: 'الترجمة إلى الإنجليزية (English translation)', full: true, dir: 'ltr' },
+  { k: 'editorial_notes', type: 'textarea', rows: 3, label: 'الهوامش والتحقيق', full: true, dir: 'auto' },
+  { k: 'research_notes', type: 'textarea', rows: 3, label: 'الدراسة والتحليل', full: true, dir: 'auto' },
+  { k: 'verification_status', type: 'select', label: 'حالة التحقق', options: VERIFICATIONS },
+  { k: 'is_published', type: 'checkbox', label: 'منشورة على الموقع (يراها الزوار)' }
+];
+
+function tri(prefix, labelAr, type = 'text', extra = {}) {
+  return [
+    { k: prefix + '_ar', type, label: labelAr + ' — العربية', ...extra },
+    { k: prefix + '_en', type, label: labelAr + ' — English', dir: 'ltr', ...extra },
+    { k: prefix + '_fr', type, label: labelAr + ' — Français', dir: 'ltr', ...extra }
+  ];
 }
 
+const TL_SCHEMA = [
+  { k: 'sort_order', type: 'number', label: 'الترتيب (الأصغر يظهر أولاً)', def: 10 },
+  { k: 'document_id', type: 'docselect', label: 'الوثيقة المرتبطة (اختياري)' },
+  { type: 'section', label: 'تاريخ الحدث (نص)' },
+  ...tri('date', 'التاريخ'),
+  { type: 'section', label: 'عنوان الحدث' },
+  ...tri('title', 'العنوان'),
+  { type: 'section', label: 'وصف الحدث' },
+  ...tri('desc', 'الوصف', 'textarea', { rows: 3, full: true }),
+  { k: 'is_published', type: 'checkbox', label: 'منشور على الموقع', def: true }
+];
+
+const FIG_SCHEMA = [
+  { k: 'sort_order', type: 'number', label: 'الترتيب (الأصغر يظهر أولاً)', def: 10 },
+  { k: 'image_url', type: 'image', label: 'صورة الشخصية', folder: 'figures' },
+  { type: 'section', label: 'الاسم' },
+  ...tri('name', 'الاسم'),
+  { type: 'section', label: 'الصفة / المنصب' },
+  ...tri('role', 'الصفة'),
+  { type: 'section', label: 'نبذة قصيرة (تظهر في البطاقة)' },
+  ...tri('desc', 'النبذة', 'textarea', { rows: 2, full: true }),
+  { type: 'section', label: 'السيرة الكاملة (تظهر في نافذة «عرض السيرة»)' },
+  ...tri('bio', 'السيرة', 'textarea', { rows: 5, full: true }),
+  { type: 'section', label: 'الوثائق المرتبطة' },
+  { k: 'document_ids', type: 'docmulti', label: 'اختر الوثائق المرتبطة بهذه الشخصية', full: true },
+  { k: 'is_published', type: 'checkbox', label: 'منشورة على الموقع', def: true }
+];
+
+function fieldHtml(prefix, f) {
+  const id = `${prefix}-${f.k}`;
+  const span = (f.full || f.type === 'section' || f.type === 'textarea' || f.type === 'docmulti' || f.type === 'image') ? 'md:col-span-2' : '';
+  const dir = f.dir ? ` dir="${f.dir}"` : '';
+  let inner = '';
+  switch (f.type) {
+    case 'section': return `<h4 class="form-section md:col-span-2">${esc(f.label)}</h4>`;
+    case 'textarea': inner = `<label class="lbl" for="${id}">${esc(f.label)}</label><textarea id="${id}" class="input" rows="${f.rows || 3}"${dir}></textarea>`; break;
+    case 'select': inner = `<label class="lbl" for="${id}">${esc(f.label)}</label><select id="${id}" class="input">${f.options.map(o => `<option value="${esc(o)}">${esc(o)}</option>`).join('')}</select>`; break;
+    case 'checkbox': inner = `<label class="flex items-center gap-2 text-sm pt-2"><input id="${id}" type="checkbox"><span>${esc(f.label)}</span></label>`; break;
+    case 'image': inner = `<span class="lbl">${esc(f.label)}</span>${imageFieldHtml(id, f.folder)}`; break;
+    case 'docselect': inner = `<label class="lbl" for="${id}">${esc(f.label)}</label><select id="${id}" class="input"></select>`; break;
+    case 'docmulti': inner = `<span class="lbl">${esc(f.label)}</span><div id="${id}" class="border border-archive-200 rounded-xl p-2 max-h-52 overflow-y-auto space-y-1 bg-white"></div>`; break;
+    default: inner = `<label class="lbl" for="${id}">${esc(f.label)}</label><input id="${id}" type="${f.type}" class="input"${dir}>`;
+  }
+  return `<div class="${span}">${inner}</div>`;
+}
+function renderFormFields(container, prefix, schema) {
+  $(container).innerHTML = schema.map(f => fieldHtml(prefix, f)).join('');
+}
+function renderDocSelect(id, value) {
+  $(id).innerHTML = '<option value="">— بدون ربط —</option>' + allDocs.map(d => `<option value="${esc(d.id)}">${esc(d.title)}</option>`).join('');
+  $(id).value = value == null ? '' : String(value);
+}
+function renderDocMulti(id, selected) {
+  const set = new Set((selected || []).map(String));
+  $(id).innerHTML = allDocs.length ? allDocs.map(d => `
+    <label class="flex items-center gap-2 text-sm p-1.5 rounded-lg hover:bg-archive-50 cursor-pointer">
+      <input type="checkbox" value="${esc(d.id)}" ${set.has(String(d.id)) ? 'checked' : ''}>
+      <span>${esc(d.title)} <span class="text-xs text-slate-400">${esc(d.reference_code || '')}</span></span>
+    </label>`).join('') : '<p class="text-xs text-slate-400 p-2">لا توجد وثائق بعد.</p>';
+}
+function fillForm(prefix, schema, row) {
+  schema.forEach(f => {
+    if (f.type === 'section') return;
+    const id = `${prefix}-${f.k}`, v = row ? row[f.k] : undefined;
+    switch (f.type) {
+      case 'checkbox': $(id).checked = row ? !!v : (f.def !== undefined ? f.def : false); break;
+      case 'image': setImageField(id, v || ''); break;
+      case 'docmulti': renderDocMulti(id, Array.isArray(v) ? v : []); break;
+      case 'docselect': renderDocSelect(id, v); break;
+      case 'select': $(id).value = (v != null && f.options.includes(v)) ? v : f.options[0]; break;
+      case 'number': $(id).value = v != null ? v : (f.def !== undefined ? f.def : 0); break;
+      default: $(id).value = v != null ? v : '';
+    }
+  });
+}
+function readForm(prefix, schema) {
+  const out = {};
+  schema.forEach(f => {
+    if (f.type === 'section') return;
+    const id = `${prefix}-${f.k}`, el = $(id);
+    switch (f.type) {
+      case 'checkbox': out[f.k] = el.checked; break;
+      case 'image': out[f.k] = getImageField(id) || null; break;
+      case 'docmulti': out[f.k] = Array.from(el.querySelectorAll('input:checked')).map(i => i.value); break;
+      case 'docselect': out[f.k] = el.value || null; break;
+      case 'number': out[f.k] = el.value === '' ? 0 : Number(el.value); break;
+      case 'date': out[f.k] = el.value || null; break;
+      case 'select': out[f.k] = el.value; break;
+      default: { const v = el.value.trim(); out[f.k] = v === '' ? null : v; }
+    }
+  });
+  return out;
+}
+
+// =====================================================================
+// CRUD panels
+// =====================================================================
 let allDocs = [];
-let editingDocId = null;
+const panels = {};
+
+function makePanel(cfg) {
+  const st = { rows: [], editingId: null };
+  const p = {
+    async load() {
+      try { st.rows = await cfg.fetch(); }
+      catch (e) { $('list-' + cfg.name).innerHTML = `<p class="text-red-600 text-sm">${esc(errMsg(e))}</p>`; return; }
+      if (cfg.after) cfg.after(st.rows);
+      p.renderList();
+    },
+    renderList() {
+      const list = $('list-' + cfg.name);
+      list.innerHTML = st.rows.length ? st.rows.map(r => `
+        <div class="flex items-center justify-between border border-archive-100 rounded-xl p-3 gap-2 flex-wrap bg-white">
+          <div class="min-w-0">
+            <p class="font-semibold truncate">${esc(cfg.rowTitle(r))}</p>
+            <p class="text-xs text-slate-400">${cfg.rowSub(r)} · ${r.is_published ? '<span class="text-emerald-600 font-bold">منشور</span>' : '<span class="text-amber-600 font-bold">مسودة</span>'}</p>
+          </div>
+          <div class="flex gap-2 flex-wrap">
+            <button onclick="panels.${cfg.name}.edit('${esc(r.id)}')" class="btn-ghost !py-1.5 !px-3 !text-xs">تعديل</button>
+            <button onclick="panels.${cfg.name}.toggle('${esc(r.id)}')" class="btn-ghost !py-1.5 !px-3 !text-xs">${r.is_published ? 'إخفاء' : 'نشر'}</button>
+            ${cfg.canDelete ? `<button onclick="panels.${cfg.name}.remove('${esc(r.id)}')" class="btn-danger !py-1.5 !px-3 !text-xs">حذف</button>` : ''}
+          </div>
+        </div>`).join('') : `<p class="text-slate-400">${cfg.emptyText}</p>`;
+    },
+    open(row) {
+      st.editingId = row ? row.id : null;
+      $('form-' + cfg.name + '-title').textContent = row ? cfg.editTitle : cfg.newTitle;
+      fillForm(cfg.name, cfg.schema, row);
+      $('form-' + cfg.name).classList.remove('hidden-view');
+      $('form-' + cfg.name).scrollIntoView({ behavior: 'smooth', block: 'start' });
+    },
+    edit(id) { const r = st.rows.find(x => String(x.id) === String(id)); if (r) p.open(r); },
+    close() { st.editingId = null; $('form-' + cfg.name).classList.add('hidden-view'); },
+    async save(btn) {
+      const payload = readForm(cfg.name, cfg.schema);
+      const problem = cfg.validate && cfg.validate(payload);
+      if (problem) { notify(problem, 'err'); return; }
+      if (st.editingId) payload.id = st.editingId;
+      await withBusy(btn, async () => {
+        try { await cfg.save(payload); notify('تم الحفظ ✓', 'ok'); p.close(); await p.load(); }
+        catch (e) { notify('تعذر الحفظ: ' + errMsg(e), 'err'); }
+      });
+    },
+    async toggle(id) {
+      const r = st.rows.find(x => String(x.id) === String(id)); if (!r) return;
+      try { await cfg.toggle(r); await p.load(); notify(r.is_published ? 'تم الإخفاء' : 'تم النشر ✓', 'ok'); }
+      catch (e) { notify('تعذر التنفيذ: ' + errMsg(e), 'err'); }
+    },
+    async remove(id) {
+      const r = st.rows.find(x => String(x.id) === String(id)); if (!r) return;
+      if (!confirm('حذف «' + cfg.rowTitle(r) + '» نهائياً؟ لا يمكن التراجع.')) return;
+      try { await cfg.remove(r); await p.load(); notify('تم الحذف', 'ok'); }
+      catch (e) { notify('تعذر الحذف: ' + errMsg(e), 'err'); }
+    }
+  };
+  panels[cfg.name] = p;
+  renderFormFields('fields-' + cfg.name, cfg.name, cfg.schema);
+  return p;
+}
+
+makePanel({
+  name: 'docs', schema: DOC_SCHEMA, canDelete: false,
+  newTitle: 'إضافة وثيقة جديدة', editTitle: 'تعديل الوثيقة', emptyText: 'لا توجد وثائق بعد',
+  fetch: () => AFAS.listAllDocuments(),
+  after: (rows) => { allDocs = rows; },
+  rowTitle: r => r.title,
+  rowSub: r => `${esc(r.category)} · ${esc(r.event_date_label || '')}`,
+  validate: d => !d.title ? 'العنوان مطلوب' : '',
+  save: (d) => {
+    // Columns added by supabase-cms-setup.sql: leave them out while empty so the
+    // form keeps working even before that SQL file has been run.
+    const existing = allDocs.find(x => String(x.id) === String(d.id)) || {};
+    NEW_DOC_COLS.forEach(c => { if (d[c] == null && !(c in existing)) delete d[c]; });
+    return AFAS.saveDocument(d);
+  },
+  toggle: (r) => AFAS.togglePublish(r.id, !r.is_published)
+});
+makePanel({
+  name: 'timeline', schema: TL_SCHEMA, canDelete: true,
+  newTitle: 'إضافة حدث', editTitle: 'تعديل الحدث', emptyText: 'لا توجد أحداث بعد',
+  fetch: () => AFAS.listRows('timeline_events'),
+  rowTitle: r => r.title_ar || r.title_en || r.title_fr || '(بدون عنوان)',
+  rowSub: r => `${esc(r.date_ar || '')} · ترتيب ${esc(r.sort_order)}`,
+  validate: d => (!d.title_ar && !d.title_en && !d.title_fr) ? 'أدخل عنواناً واحداً على الأقل' : '',
+  save: (d) => AFAS.saveRow('timeline_events', d, 'timeline_event'),
+  toggle: (r) => AFAS.saveRow('timeline_events', { id: r.id, is_published: !r.is_published }, 'timeline_event'),
+  remove: (r) => AFAS.deleteRow('timeline_events', r.id, 'timeline_event')
+});
+makePanel({
+  name: 'figures', schema: FIG_SCHEMA, canDelete: true,
+  newTitle: 'إضافة شخصية', editTitle: 'تعديل الشخصية', emptyText: 'لا توجد شخصيات بعد',
+  fetch: () => AFAS.listRows('figures'),
+  rowTitle: r => r.name_ar || r.name_en || r.name_fr || '(بدون اسم)',
+  rowSub: r => `${esc(r.role_ar || '')} · ترتيب ${esc(r.sort_order)}`,
+  validate: d => (!d.name_ar && !d.name_en && !d.name_fr) ? 'أدخل اسماً واحداً على الأقل' : '',
+  save: (d) => AFAS.saveRow('figures', d, 'figure'),
+  toggle: (r) => AFAS.saveRow('figures', { id: r.id, is_published: !r.is_published }, 'figure'),
+  remove: (r) => AFAS.deleteRow('figures', r.id, 'figure')
+});
+
+// =====================================================================
+// Site texts (all texts of the site, 3 languages + size)
+// =====================================================================
+const LANGS = [['ar', 'العربية', 'rtl'], ['en', 'English', 'ltr'], ['fr', 'Français', 'ltr']];
+let textOverrides = {};   // key -> row from database
+
+function textRowHtml(key) {
+  const ov = textOverrides[key] || {};
+  const cells = LANGS.map(([l, name, dir]) => {
+    const def = I18N_DEFAULTS[l][key];
+    const val = (ov[l] != null && ov[l] !== '') ? ov[l] : def;
+    const rows = String(val).length > 90 ? 3 : 2;
+    return `<div><label class="lbl">${name}</label><textarea data-lang="${l}" data-def="${esc(def)}" dir="${dir}" rows="${rows}" class="input !text-sm" oninput="markTextRow(this)">${esc(val)}</textarea></div>`;
+  }).join('');
+  const size = ov.size ? Number(ov.size) : 100;
+  return `<div class="text-row" data-key="${esc(key)}" data-search="${esc((TEXT_LABELS[key] + ' ' + key + ' ' + LANGS.map(x => I18N_DEFAULTS[x[0]][key]).join(' ')).toLowerCase())}">
+    <div class="flex items-center justify-between gap-2 mb-2 flex-wrap">
+      <b class="text-sm">${esc(TEXT_LABELS[key])}</b><code class="text-[11px] text-slate-400" dir="ltr">${esc(key)}</code>
+    </div>
+    <div class="grid md:grid-cols-3 gap-2">${cells}</div>
+    <div class="flex items-center gap-3 mt-3 flex-wrap">
+      <label class="lbl !mb-0">حجم النص: <b class="size-out">${size}%</b></label>
+      <input type="range" class="size-input w-40" min="50" max="200" step="5" value="${size}" oninput="this.closest('.text-row').querySelector('.size-out').textContent=this.value+'%'; markTextRow(this)">
+      <button type="button" class="text-xs text-archive-700 hover:underline" onclick="resetTextRow(this)">استعادة الافتراضي</button>
+    </div>
+  </div>`;
+}
+async function loadTexts() {
+  try {
+    const rows = await AFAS.listSiteTexts();
+    textOverrides = Object.fromEntries(rows.map(r => [r.key, r]));
+  } catch (e) {
+    textOverrides = {};
+    notify('تعذر قراءة النصوص المحفوظة: ' + errMsg(e), 'err');
+  }
+  $('texts-groups').innerHTML = TEXT_GROUPS.map((g, gi) => `
+    <details class="card p-4" data-group="${gi}">
+      <summary class="cursor-pointer font-bold text-archive-800">${esc(g.title)} <span class="text-xs font-normal text-slate-400">(${g.keys.length})</span></summary>
+      <div class="space-y-3 mt-4">${g.keys.map(textRowHtml).join('')}</div>
+    </details>`).join('');
+  updateChangedCount();
+}
+function currentRowState(row) {
+  const key = row.dataset.key;
+  const o = { key, size: Number(row.querySelector('.size-input').value) };
+  row.querySelectorAll('textarea').forEach(ta => {
+    const v = ta.value.trim();
+    o[ta.dataset.lang] = (v === '' || v === ta.dataset.def) ? null : v;
+  });
+  return o;
+}
+function isOverride(o) { return o.ar || o.en || o.fr || o.size !== 100; }
+function savedState(key) {
+  const ov = textOverrides[key];
+  return ov ? { ar: ov.ar || null, en: ov.en || null, fr: ov.fr || null, size: Number(ov.size) || 100 } : { ar: null, en: null, fr: null, size: 100 };
+}
+function rowIsChanged(row) {
+  const cur = currentRowState(row), sv = savedState(row.dataset.key);
+  return cur.ar !== sv.ar || cur.en !== sv.en || cur.fr !== sv.fr || cur.size !== sv.size;
+}
+function markTextRow(el) {
+  const row = el.closest('.text-row');
+  row.classList.toggle('changed', rowIsChanged(row));
+  updateChangedCount();
+}
+function updateChangedCount() {
+  const n = document.querySelectorAll('.text-row.changed').length;
+  $('texts-changed').textContent = n ? `${n} تغيير غير محفوظ` : '';
+}
+function resetTextRow(btn) {
+  const row = btn.closest('.text-row');
+  row.querySelectorAll('textarea').forEach(ta => { ta.value = ta.dataset.def; });
+  const sz = row.querySelector('.size-input'); sz.value = 100;
+  row.querySelector('.size-out').textContent = '100%';
+  markTextRow(btn);
+}
+function filterTexts() {
+  const q = $('texts-search').value.trim().toLowerCase();
+  document.querySelectorAll('#texts-groups details').forEach(d => {
+    let any = false;
+    d.querySelectorAll('.text-row').forEach(r => {
+      const show = !q || r.dataset.search.includes(q);
+      r.classList.toggle('hidden-view', !show);
+      if (show) any = true;
+    });
+    d.classList.toggle('hidden-view', !any);
+    if (q) d.open = true;
+  });
+}
+async function saveTexts(btn) {
+  const changed = Array.from(document.querySelectorAll('.text-row.changed'));
+  if (!changed.length) { notify('لا توجد تغييرات للحفظ', 'info'); return; }
+  const toUpsert = [], toDelete = [];
+  changed.forEach(row => {
+    const st = currentRowState(row);
+    if (isOverride(st)) toUpsert.push({ key: st.key, ar: st.ar, en: st.en, fr: st.fr, size: st.size });
+    else toDelete.push(st.key);
+  });
+  await withBusy(btn, async () => {
+    try {
+      await AFAS.saveSiteTexts(toUpsert);
+      await AFAS.deleteSiteTexts(toDelete);
+      notify('تم حفظ النصوص ✓ — ستظهر على الموقع عند التحديث', 'ok');
+      await loadTexts();
+      filterTexts();
+    } catch (e) { notify('تعذر الحفظ: ' + errMsg(e), 'err'); }
+  });
+}
+
+// =====================================================================
+// Site images (flag + logo)
+// =====================================================================
+let imageRows = {};
+async function loadImages() {
+  try {
+    const rows = await AFAS.listSiteImages();
+    imageRows = Object.fromEntries(rows.map(r => [r.key, r]));
+  } catch (e) { imageRows = {}; notify('تعذر قراءة الصور المحفوظة: ' + errMsg(e), 'err'); }
+  const w = imageRows.hero_flag_wide || {}, t = imageRows.hero_flag_tall || {}, l = imageRows.site_logo || {};
+  setImageField('img-hero_flag_wide', w.url || '');
+  setImageField('img-hero_flag_tall', t.url || '');
+  const fs = w.size ? Number(w.size) : 100;
+  $('flag-size').value = fs; $('out-flag-size').textContent = fs + '%';
+  const op = $('flag-opacity');
+  if (w.opacity !== null && w.opacity !== undefined && w.opacity !== '') { op.value = w.opacity; op.dataset.touched = '1'; $('out-flag-opacity').textContent = w.opacity + '%'; }
+  else { op.value = 42; op.dataset.touched = ''; $('out-flag-opacity').textContent = 'الافتراضي'; }
+  setImageField('img-site_logo', l.url || '');
+  const ls = l.size ? Number(l.size) : 100;
+  $('logo-size').value = ls; $('out-logo-size').textContent = ls + '%';
+}
+async function saveFlag(btn) {
+  await withBusy(btn, async () => {
+    try {
+      const touched = $('flag-opacity').dataset.touched === '1';
+      await AFAS.saveSiteImage({ key: 'hero_flag_wide', url: getImageField('img-hero_flag_wide') || null, size: Number($('flag-size').value), opacity: touched ? Number($('flag-opacity').value) : null });
+      await AFAS.saveSiteImage({ key: 'hero_flag_tall', url: getImageField('img-hero_flag_tall') || null, size: 100, opacity: null });
+      notify('تم حفظ العلم ✓', 'ok');
+    } catch (e) { notify('تعذر الحفظ: ' + errMsg(e), 'err'); }
+  });
+}
+async function resetFlag(btn) {
+  if (!confirm('استعادة علم البانر الافتراضي؟')) return;
+  await withBusy(btn, async () => {
+    try { await AFAS.deleteSiteImage('hero_flag_wide'); await AFAS.deleteSiteImage('hero_flag_tall'); await loadImages(); notify('تمت الاستعادة ✓', 'ok'); }
+    catch (e) { notify('تعذر التنفيذ: ' + errMsg(e), 'err'); }
+  });
+}
+async function saveLogo(btn) {
+  await withBusy(btn, async () => {
+    try { await AFAS.saveSiteImage({ key: 'site_logo', url: getImageField('img-site_logo') || null, size: Number($('logo-size').value), opacity: null }); notify('تم حفظ الشعار ✓', 'ok'); }
+    catch (e) { notify('تعذر الحفظ: ' + errMsg(e), 'err'); }
+  });
+}
+async function resetLogo(btn) {
+  if (!confirm('استعادة الشعار الافتراضي؟')) return;
+  await withBusy(btn, async () => {
+    try { await AFAS.deleteSiteImage('site_logo'); await loadImages(); notify('تمت الاستعادة ✓', 'ok'); }
+    catch (e) { notify('تعذر التنفيذ: ' + errMsg(e), 'err'); }
+  });
+}
+
+// =====================================================================
+// Team & audit log (super admin)
+// =====================================================================
+function statusBadge(status) { return `<span class="badge badge-${esc(status)}">${esc(status)}</span>`; }
+
+async function loadAdminData() {
+  try {
+    const pending = await AFAS.listPendingEditors();
+    $('pending-list').innerHTML = pending.length ? pending.map(p => `
+      <div class="flex items-center justify-between border border-archive-100 rounded-xl p-3 gap-2 flex-wrap">
+        <span>${esc(p.email)}</span>
+        <div class="flex gap-2">
+          <button onclick="approveEditor('${esc(p.id)}')" class="btn-primary !py-1.5 !px-3 !text-xs">اعتماد</button>
+          <button onclick="rejectEditor('${esc(p.id)}')" class="btn-ghost !py-1.5 !px-3 !text-xs">رفض</button>
+        </div>
+      </div>`).join('') : '<p class="text-slate-400">لا توجد طلبات معلّقة</p>';
+
+    const editors = await AFAS.listAllEditorsAndAdmins();
+    $('editors-list').innerHTML = editors.map(e => `
+      <div class="flex items-center justify-between border border-archive-100 rounded-xl p-3 gap-2 flex-wrap">
+        <span>${esc(e.email)} <span class="text-slate-400">(${esc(e.role)})</span></span>
+        <div class="flex items-center gap-2">
+          ${statusBadge(e.status)}
+          ${e.role !== 'super_admin' ? `<button onclick="suspendEditor('${esc(e.id)}', '${esc(e.status)}')" class="btn-ghost !py-1.5 !px-3 !text-xs">${e.status === 'suspended' ? 'إعادة تفعيل' : 'طرد/تعليق'}</button>` : ''}
+        </div>
+      </div>`).join('');
+
+    const audit = await AFAS.getAuditLog(50);
+    $('audit-list').innerHTML = audit.length ? audit.map(a => `
+      <div class="border-b border-archive-100 pb-1">${esc(new Date(a.created_at).toLocaleString('ar'))} — <b>${esc(a.actor_email || 'نظام')}</b> — ${esc(a.action)} ${a.target ? '→ ' + esc(a.target) : ''}</div>`).join('') : '<p class="text-slate-400">لا يوجد سجل بعد</p>';
+  } catch (e) { notify('تعذر تحميل بيانات الفريق: ' + errMsg(e), 'err'); }
+}
+async function approveEditor(id) { await AFAS.setEditorStatus(id, 'approved'); loadAdminData(); }
+async function rejectEditor(id) { await AFAS.setEditorStatus(id, 'rejected'); loadAdminData(); }
+async function suspendEditor(id, status) { await AFAS.setEditorStatus(id, status === 'suspended' ? 'approved' : 'suspended'); loadAdminData(); }
+
+// =====================================================================
+// Session / navigation
+// =====================================================================
+let isSuper = false;
+const loaders = {
+  docs: () => panels.docs.load(),
+  timeline: async () => { if (!allDocs.length) await panels.docs.load(); await panels.timeline.load(); },
+  figures: async () => { if (!allDocs.length) await panels.docs.load(); await panels.figures.load(); },
+  texts: () => loadTexts(),
+  images: () => loadImages(),
+  team: () => loadAdminData()
+};
+function showTab(name) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden-view'));
+  $('panel-' + name).classList.remove('hidden-view');
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+  loaders[name]();
+}
+function show(id) {
+  ['view-viewer', 'view-pending', 'view-workspace'].forEach(v => $(v).classList.add('hidden-view'));
+  $(id).classList.remove('hidden-view');
+}
 
 async function refreshApp() {
   const profile = await AFAS.getMyProfile();
   if (!profile) {
-    document.getElementById('view-login').classList.remove('hidden-view');
-    document.getElementById('view-app').classList.add('hidden-view');
+    $('view-login').classList.remove('hidden-view');
+    $('view-app').classList.add('hidden-view');
     return;
   }
-  document.getElementById('view-login').classList.add('hidden-view');
-  document.getElementById('view-app').classList.remove('hidden-view');
-  document.getElementById('me-email').textContent = profile.email;
-  document.getElementById('me-role').textContent = `${profile.role} · ${profile.status}`;
+  $('view-login').classList.add('hidden-view');
+  $('view-app').classList.remove('hidden-view');
+  $('me-email').textContent = profile.email;
+  $('me-role').textContent = `${profile.role} · ${profile.status}`;
 
-  const isSuperAdmin = profile.role === 'super_admin' && profile.status === 'approved';
+  isSuper = profile.role === 'super_admin' && profile.status === 'approved';
   const isApprovedEditor = profile.role === 'editor' && profile.status === 'approved';
 
-  if (isSuperAdmin || isApprovedEditor) {
+  if (isSuper || isApprovedEditor) {
     show('view-workspace');
-    document.getElementById('admin-only-sections').classList.toggle('hidden-view', !isSuperAdmin);
-    loadDocuments();
-    if (isSuperAdmin) loadAdminData();
+    document.querySelectorAll('.super-only').forEach(b => b.classList.toggle('hidden-view', !isSuper));
+    showTab('docs');
   } else if (profile.role === 'editor' && profile.status === 'pending') {
     show('view-pending');
   } else {
@@ -218,10 +816,10 @@ async function refreshApp() {
 }
 
 async function handleLogin() {
-  const email = document.getElementById('login-email').value.trim();
-  const password = document.getElementById('login-password').value;
+  const email = $('login-email').value.trim();
+  const password = $('login-password').value;
   const { error } = await AFAS.signInWithEmail(email, password);
-  const errBox = document.getElementById('login-error');
+  const errBox = $('login-error');
   if (error) {
     errBox.textContent = 'فشل الدخول: تحقق من البريد وكلمة المرور';
     errBox.classList.remove('hidden-view');
@@ -230,142 +828,13 @@ async function handleLogin() {
   errBox.classList.add('hidden-view');
   refreshApp();
 }
-
-async function handleSignup() {
-  const email = document.getElementById('signup-email').value.trim();
-  const password = document.getElementById('signup-password').value;
-  const { error } = await AFAS.signUpWithEmail(email, password);
-  const errBox = document.getElementById('login-error');
-  if (error) {
-    errBox.textContent = 'تعذر إنشاء الحساب: ' + error.message;
-    errBox.classList.remove('hidden-view');
-    return;
-  }
-  errBox.textContent = 'تم إنشاء الحساب! تحقق من بريدك لتأكيده ثم سجّل الدخول.';
-  errBox.classList.remove('hidden-view');
-}
-
-async function handleLogout() {
-  await AFAS.signOut();
-  refreshApp();
-}
-
+async function handleLogout() { await AFAS.signOut(); refreshApp(); }
 async function applyEditor() {
-  await AFAS.applyAsEditor();
-  refreshApp();
+  try { await AFAS.applyAsEditor(); refreshApp(); }
+  catch (e) { notify(errMsg(e), 'err'); }
 }
 
-async function loadAdminData() {
-  const pending = await AFAS.listPendingEditors();
-  document.getElementById('pending-list').innerHTML = pending.length ? pending.map(p => `
-    <div class="flex items-center justify-between border border-archive-100 rounded-xl p-3">
-      <span>${p.email}</span>
-      <div class="flex gap-2">
-        <button onclick="approveEditor('${p.id}')" class="btn-primary !py-1.5 !px-3 !text-xs">اعتماد</button>
-        <button onclick="rejectEditor('${p.id}')" class="btn-ghost !py-1.5 !px-3 !text-xs">رفض</button>
-      </div>
-    </div>`).join('') : '<p class="text-slate-400">لا توجد طلبات معلّقة</p>';
-
-  const editors = await AFAS.listAllEditorsAndAdmins();
-  document.getElementById('editors-list').innerHTML = editors.map(e => `
-    <div class="flex items-center justify-between border border-archive-100 rounded-xl p-3">
-      <span>${e.email} <span class="text-slate-400">(${e.role})</span></span>
-      <div class="flex items-center gap-2">
-        ${statusBadge(e.status)}
-        ${e.role !== 'super_admin' ? `<button onclick="suspendEditor('${e.id}')" class="btn-ghost !py-1.5 !px-3 !text-xs">${e.status === 'suspended' ? 'إعادة تفعيل' : 'طرد/تعليق'}</button>` : ''}
-      </div>
-    </div>`).join('');
-
-  const audit = await AFAS.getAuditLog(50);
-  document.getElementById('audit-list').innerHTML = audit.length ? audit.map(a => `
-    <div class="border-b border-archive-100 pb-1">${new Date(a.created_at).toLocaleString('ar')} — <b>${a.actor_email || 'نظام'}</b> — ${a.action} ${a.target ? '→ ' + a.target : ''}</div>
-  `).join('') : '<p class="text-slate-400">لا يوجد سجل بعد</p>';
-}
-
-async function approveEditor(id) { await AFAS.setEditorStatus(id, 'approved'); loadAdminData(); }
-async function rejectEditor(id) { await AFAS.setEditorStatus(id, 'rejected'); loadAdminData(); }
-async function suspendEditor(id) { await AFAS.setEditorStatus(id, 'suspended'); loadAdminData(); }
-
-// ---------- Documents manager ----------
-
-async function loadDocuments() {
-  allDocs = await AFAS.listAllDocuments();
-  const list = document.getElementById('doc-list');
-  list.innerHTML = allDocs.length ? allDocs.map(d => `
-    <div class="flex items-center justify-between border border-archive-100 rounded-xl p-3 gap-2 flex-wrap">
-      <div>
-        <p class="font-semibold">${d.title}</p>
-        <p class="text-xs text-slate-400">${d.category} · ${d.event_date_label || ''} · ${d.is_published ? '<span class="text-emerald-600 font-bold">منشورة</span>' : '<span class="text-amber-600 font-bold">مسودة</span>'}</p>
-      </div>
-      <div class="flex gap-2">
-        <button onclick="editDoc('${d.id}')" class="btn-ghost !py-1.5 !px-3 !text-xs">تعديل</button>
-        <button onclick="togglePublishDoc('${d.id}', ${!d.is_published})" class="btn-ghost !py-1.5 !px-3 !text-xs">${d.is_published ? 'إخفاء' : 'نشر'}</button>
-      </div>
-    </div>`).join('') : '<p class="text-slate-400">لا توجد وثائق بعد</p>';
-}
-
-function editDoc(id) {
-  const doc = allDocs.find(d => d.id === id);
-  if (doc) openDocForm(doc);
-}
-
-async function togglePublishDoc(id, newState) {
-  await AFAS.togglePublish(id, newState);
-  loadDocuments();
-}
-
-function openDocForm(doc) {
-  editingDocId = doc ? doc.id : null;
-  document.getElementById('doc-form-title').textContent = doc ? 'تعديل الوثيقة' : 'إضافة وثيقة جديدة';
-  document.getElementById('doc-title').value = doc?.title || '';
-  document.getElementById('doc-category').value = doc?.category || 'مراسلات';
-  document.getElementById('doc-date-label').value = doc?.event_date_label || '';
-  document.getElementById('doc-date').value = doc?.event_date || '';
-  document.getElementById('doc-code').value = doc?.reference_code || '';
-  document.getElementById('doc-image').value = doc?.cover_image || '';
-  document.getElementById('doc-desc').value = doc?.description || '';
-  document.getElementById('doc-transcription').value = doc?.transcription_text || '';
-  document.getElementById('doc-translation').value = doc?.translation_text || '';
-  document.getElementById('doc-notes').value = doc?.editorial_notes || '';
-  document.getElementById('doc-research').value = doc?.research_notes || '';
-  document.getElementById('doc-verification').value = doc?.verification_status || 'قيد المراجعة';
-  document.getElementById('doc-published').checked = doc?.is_published || false;
-  document.getElementById('doc-form-card').classList.remove('hidden-view');
-  document.getElementById('doc-form-card').scrollIntoView({ behavior: 'smooth' });
-}
-
-function closeDocForm() {
-  editingDocId = null;
-  document.getElementById('doc-form-card').classList.add('hidden-view');
-}
-
-async function saveDocForm() {
-  const payload = {
-    title: document.getElementById('doc-title').value.trim(),
-    category: document.getElementById('doc-category').value,
-    event_date_label: document.getElementById('doc-date-label').value.trim() || null,
-    event_date: document.getElementById('doc-date').value || null,
-    reference_code: document.getElementById('doc-code').value.trim() || null,
-    cover_image: document.getElementById('doc-image').value.trim() || null,
-    description: document.getElementById('doc-desc').value.trim() || null,
-    transcription_text: document.getElementById('doc-transcription').value.trim() || null,
-    translation_text: document.getElementById('doc-translation').value.trim() || null,
-    editorial_notes: document.getElementById('doc-notes').value.trim() || null,
-    research_notes: document.getElementById('doc-research').value.trim() || null,
-    verification_status: document.getElementById('doc-verification').value,
-    is_published: document.getElementById('doc-published').checked
-  };
-  if (!payload.title) { alert('العنوان مطلوب'); return; }
-  if (editingDocId) payload.id = editingDocId;
-  try {
-    await AFAS.saveDocument(payload);
-    closeDocForm();
-    loadDocuments();
-  } catch (e) {
-    alert('حدث خطأ أثناء الحفظ: ' + e.message);
-  }
-}
-
+initImageFields();
 refreshApp();
 </script>
 </body>
