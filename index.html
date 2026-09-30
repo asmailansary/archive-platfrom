@@ -353,6 +353,21 @@ html[dir="ltr"] .hero-flag-shade {
 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
 </svg>
 </button>
+<!-- Visitor Account -->
+<div id="auth-guest">
+<button onclick="openAuthModal()" class="px-3.5 py-2.5 rounded-xl bg-archive-600 hover:bg-archive-500 text-white text-xs sm:text-sm font-bold transition-all duration-200 shadow-sm shadow-archive-500/20 whitespace-nowrap">
+تسجيل الدخول
+</button>
+</div>
+<div id="auth-user" class="hidden relative">
+<button id="account-btn" type="button" onclick="toggleAccountMenu(event)" aria-haspopup="true" aria-expanded="false" class="flex items-center gap-2 px-2.5 py-2 rounded-xl bg-archive-100 dark:bg-slate-800 text-slate-700 dark:text-archive-300 hover:scale-105 active:scale-95 transition-all duration-200">
+<span id="auth-avatar" class="w-7 h-7 rounded-full bg-archive-500 text-white flex items-center justify-center text-[11px] font-bold flex-shrink-0 overflow-hidden"></span>
+<span id="auth-name" class="hidden sm:inline text-xs font-bold max-w-[90px] truncate"></span>
+</button>
+<div id="account-menu" class="lang-menu" role="menu">
+<button type="button" onclick="logoutVisitor()" class="lang-opt"><span>تسجيل الخروج</span></button>
+</div>
+</div>
 <!-- Mobile Menu Trigger -->
 <button onclick="toggleMobileMenu()" data-i18n-aria="aria_menu" aria-label="القائمة" class="xl:hidden p-2.5 rounded-xl bg-archive-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200">
 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -628,6 +643,27 @@ class="search-input w-full pl-4 pr-10 py-3 rounded-xl bg-white dark:bg-slate-900
 <h4 class="text-sm font-bold text-slate-800 dark:text-slate-200 mb-2" data-i18n="fig_related">الوثائق المرتبطة</h4>
 <div id="fig-modal-docs" class="space-y-2"></div>
 </div>
+</div>
+</div>
+</div>
+
+<!-- VISITOR LOGIN MODAL -->
+<div id="auth-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-300" role="dialog" aria-modal="true">
+<div onclick="closeAuthModal()" class="absolute inset-0 bg-slate-950/60 backdrop-blur-sm"></div>
+<div class="relative w-full max-w-sm bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-archive-200 dark:border-slate-800 overflow-hidden transform scale-95 transition-all duration-300" id="auth-modal-content">
+<div class="flex items-center justify-between gap-3 p-6 border-b border-archive-100 dark:border-slate-800">
+<h3 class="text-lg font-bold text-slate-900 dark:text-slate-100">تسجيل الدخول</h3>
+<button onclick="closeAuthModal()" aria-label="إغلاق" class="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex-shrink-0">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+</button>
+</div>
+<div class="p-6 space-y-4">
+<p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">سجّل الدخول لحفظ الوثائق المفضلة وطلب الحصول على نسخ منها.</p>
+<button onclick="loginWithGoogle()" class="w-full flex items-center justify-center gap-3 py-3 rounded-xl border border-archive-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-sm font-bold hover:bg-archive-50 dark:hover:bg-slate-700 transition-colors">
+<svg class="w-5 h-5" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"/><path fill="#FF3D00" d="M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 16.318 4 9.656 8.337 6.306 14.691z"/><path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238C29.211 35.091 26.715 36 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"/><path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303a12.04 12.04 0 01-4.087 5.571l.003-.002 6.19 5.238C41.202 35.245 44 30.026 44 24c0-1.341-.138-2.65-.389-3.917z"/></svg>
+<span>الدخول عبر حساب Google</span>
+</button>
+<p id="auth-modal-error" class="hidden text-xs font-semibold text-red-600 text-center"></p>
 </div>
 </div>
 </div>
@@ -1286,7 +1322,88 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') { closeModal(); closeFigureModal(); }
 });
 
+// ===================== Visitor Account (Google Sign-in) =====================
+function openAuthModal() {
+  const m = document.getElementById('auth-modal');
+  const err = document.getElementById('auth-modal-error');
+  if (err) { err.classList.add('hidden'); err.textContent = ''; }
+  m.classList.remove('opacity-0', 'pointer-events-none');
+  const content = document.getElementById('auth-modal-content');
+  if (content) content.classList.remove('scale-95');
+}
+function closeAuthModal() {
+  const m = document.getElementById('auth-modal');
+  m.classList.add('opacity-0', 'pointer-events-none');
+  const content = document.getElementById('auth-modal-content');
+  if (content) content.classList.add('scale-95');
+}
+async function loginWithGoogle() {
+  try {
+    const { error } = await AFAS.signInWithGoogle();
+    if (error) throw error;
+  } catch (e) {
+    const err = document.getElementById('auth-modal-error');
+    if (err) { err.textContent = 'تعذر بدء تسجيل الدخول، حاول مرة أخرى.'; err.classList.remove('hidden'); }
+    console.error(e);
+  }
+}
+async function logoutVisitor() {
+  try { await AFAS.signOut(); } catch (e) { console.error(e); }
+  closeAccountMenu();
+  updateAuthUI(null);
+  if (typeof showToast === 'function') showToast('تم تسجيل الخروج');
+}
+function toggleAccountMenu(e) {
+  if (e) e.stopPropagation();
+  const menu = document.getElementById('account-menu');
+  const btn = document.getElementById('account-btn');
+  const open = menu.classList.toggle('open');
+  if (btn) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+function closeAccountMenu() {
+  const menu = document.getElementById('account-menu');
+  const btn = document.getElementById('account-btn');
+  if (menu) menu.classList.remove('open');
+  if (btn) btn.setAttribute('aria-expanded', 'false');
+}
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('#auth-user')) closeAccountMenu();
+});
+function updateAuthUI(user) {
+  const guestBox = document.getElementById('auth-guest');
+  const userBox = document.getElementById('auth-user');
+  if (!guestBox || !userBox) return;
+  if (user) {
+    guestBox.classList.add('hidden');
+    userBox.classList.remove('hidden');
+    const name = (user.user_metadata && (user.user_metadata.full_name || user.user_metadata.name)) || user.email || '';
+    const avatarUrl = user.user_metadata && user.user_metadata.avatar_url;
+    const nameEl = document.getElementById('auth-name');
+    const avatarEl = document.getElementById('auth-avatar');
+    if (nameEl) nameEl.textContent = name;
+    if (avatarEl) {
+      avatarEl.innerHTML = avatarUrl ? `<img src="${avatarUrl}" alt="" class="w-full h-full object-cover">` : '';
+      if (!avatarUrl) avatarEl.textContent = (name || '؟').trim().charAt(0).toUpperCase();
+    }
+  } else {
+    guestBox.classList.remove('hidden');
+    userBox.classList.add('hidden');
+    closeAccountMenu();
+  }
+}
+async function initAuthUI() {
+  try { updateAuthUI(await AFAS.getCurrentUser()); }
+  catch (e) { console.warn('تعذر التحقق من جلسة الزائر:', e); }
+}
+if (window.AFAS && window.AFAS.client) {
+  window.AFAS.client.auth.onAuthStateChange((_event, session) => {
+    updateAuthUI(session ? session.user : null);
+    if (session) closeAuthModal();
+  });
+}
+
 window.onload = function () {
+  initAuthUI();
   let savedTheme = null;
   try { savedTheme = localStorage.getItem('theme'); } catch (e) {}
   if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
