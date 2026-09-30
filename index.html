@@ -1442,10 +1442,18 @@ function showDebugBanner(msg) {
   if (!b) {
     b = document.createElement('div');
     b.id = 'debug-banner';
-    b.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:#c00;color:#fff;padding:12px;font-size:13px;white-space:pre-wrap;direction:ltr;text-align:left;max-height:60vh;overflow:auto;';
+    b.style.cssText = 'position:relative;z-index:99999;background:#c00;color:#fff;padding:12px 40px 12px 12px;font-size:13px;white-space:pre-wrap;direction:ltr;text-align:left;max-height:40vh;overflow:auto;';
+    const closeBtn = document.createElement('button');
+    closeBtn.textContent = 'X';
+    closeBtn.style.cssText = 'position:absolute;top:8px;left:8px;background:#fff;color:#c00;border:none;border-radius:6px;width:28px;height:28px;font-weight:bold;font-size:14px;';
+    closeBtn.onclick = () => b.remove();
+    b.appendChild(closeBtn);
     document.body.prepend(b);
   }
-  b.textContent += msg + '\n\n';
+  const line = document.createElement('div');
+  line.textContent = msg;
+  line.style.marginBottom = '10px';
+  b.appendChild(line);
 }
 window.onload = function () {
   try {
