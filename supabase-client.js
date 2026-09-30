@@ -15,10 +15,6 @@ const _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const AFAS = {
   client: _sb,
 
-  async signUpWithEmail(email, password) {
-    return _sb.auth.signUp({ email, password });
-  },
-
   async signInWithEmail(email, password) {
     return _sb.auth.signInWithPassword({ email, password });
   },
@@ -126,7 +122,132 @@ const AFAS = {
     const { error } = await _sb.from("documents").update({ is_published: isPublished }).eq("id", id);
     if (error) throw error;
     await this.logAction(isPublished ? "document_published" : "document_unpublished", id);
+  },
+
+  // ---------- Generic content tables (timeline_events, figures) ----------
+
+  async listRows(table, orderCol = "sort_order") {
+    const { data, error } = await _sb.from(table).select("*").order(orderCol, { ascending: true });
+    if (error) throw error;
+    return data || [];
+  },
+
+  // Insert (no id) or update (with id). Returns the row id.
+  async saveRow(table, row, auditName) {
+    const payload = { ...row, updated_at: new Date().toISOString() };
+    if (payload.id) {
+      const { id, ...rest } = payload;
+      const { error } = await _sb.from(table).update(rest).eq("id", id);
+      if (error) throw error;
+      await this.logAction(auditName + "_updated", id);
+      return id;
+    }
+    delete payload.id;
+    const { data, error } = await _sb.from(table).insert(payload).select().single();
+    if (error) throw error;
+    await this.logAction(auditName + "_created", data.id);
+    return data.id;
+  },
+
+  async deleteRow(table, id, auditName) {
+    const { error } = await _sb.from(table).delete().eq("id", id);
+    if (error) throw error;
+    await this.logAction(auditName + "_deleted", id);
+  },
+
+  // ---------- Editable site texts & images (super admin only, enforced by RLS) ----------
+
+  async listSiteTexts() {
+    const { data, error } = await _sb.from("site_texts").select("*");
+    if (error) throw error;
+    return data || [];
+  },
+
+  async saveSiteTexts(rows) {
+    if (!rows.length) return;
+    const uid = (await this.getCurrentUser())?.id || null;
+    const stamped = rows.map(r => ({ ...r, updated_at: new Date().toISOString(), updated_by: uid }));
+    const { error } = await _sb.from("site_texts").upsert(stamped, { onConflict: "key" });
+    if (error) throw error;
+    await this.logAction("site_texts_saved", null, { keys: rows.map(r => r.key) });
+  },
+
+  async deleteSiteTexts(keys) {
+    if (!keys.length) return;
+    const { error } = await _sb.from("site_texts").delete().in("key", keys);
+    if (error) throw error;
+    await this.logAction("site_texts_reset", null, { keys });
+  },
+
+  async listSiteImages() {
+    const { data, error } = await _sb.from("site_images").select("*");
+    if (error) throw error;
+    return data || [];
+  },
+
+  async saveSiteImage(row) {
+    const uid = (await this.getCurrentUser())?.id || null;
+    const { error } = await _sb.from("site_images")
+      .upsert({ ...row, updated_at: new Date().toISOString(), updated_by: uid }, { onConflict: "key" });
+    if (error) throw error;
+    await this.logAction("site_image_saved", row.key);
+  },
+
+  async deleteSiteImage(key) {
+    const { error } = await _sb.from("site_images").delete().eq("key", key);
+    if (error) throw error;
+    await this.logAction("site_image_reset", key);
+  },
+
+  // ---------- Image upload (from the phone gallery/camera) ----------
+  // Photos from phones are often 4–10 MB. They are shrunk in the browser
+  // first (max 1600px, WebP) so the site stays fast, then stored in the
+  // public "site-media" bucket. Returns the public URL.
+  async uploadImage(file, folder = "misc") {
+    if (!file) throw new Error("لم يتم اختيار صورة");
+    if (!/^image\//.test(file.type)) throw new Error("الملف المختار ليس صورة");
+    if (file.size > 25 * 1024 * 1024) throw new Error("حجم الصورة كبير جداً (الحد 25 ميجابايت)");
+
+    let blob = file;
+    let ext = (file.type.split("/")[1] || "png").replace("svg+xml", "svg").replace("jpeg", "jpg");
+    if (file.type !== "image/svg+xml" && file.type !== "image/gif") {
+      const out = await _shrinkImage(file, 1600, 0.85);
+      blob = out.blob;
+      ext = out.ext;
+    }
+    const path = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+    const { error } = await _sb.storage.from("site-media")
+      .upload(path, blob, { contentType: blob.type || file.type, cacheControl: "31536000", upsert: false });
+    if (error) throw error;
+    const { data } = _sb.storage.from("site-media").getPublicUrl(path);
+    await this.logAction("image_uploaded", path);
+    return data.publicUrl;
   }
 };
+
+// Shrinks a photo in the browser; falls back to the original if anything fails.
+async function _shrinkImage(file, maxSide, quality) {
+  try {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.src = url;
+    await img.decode();
+    const scale = Math.min(1, maxSide / Math.max(img.naturalWidth, img.naturalHeight));
+    const w = Math.max(1, Math.round(img.naturalWidth * scale));
+    const h = Math.max(1, Math.round(img.naturalHeight * scale));
+    const canvas = document.createElement("canvas");
+    canvas.width = w; canvas.height = h;
+    canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+    URL.revokeObjectURL(url);
+    const toBlob = (type) => new Promise(res => canvas.toBlob(res, type, quality));
+    let blob = await toBlob("image/webp");
+    if (!blob || blob.type !== "image/webp") blob = await toBlob("image/jpeg");
+    if (!blob) throw new Error("encode failed");
+    return { blob, ext: blob.type === "image/webp" ? "webp" : "jpg" };
+  } catch (e) {
+    console.warn("Image shrink failed, uploading original:", e);
+    return { blob: file, ext: (file.type.split("/")[1] || "png").replace("jpeg", "jpg") };
+  }
+}
 
 window.AFAS = AFAS;
