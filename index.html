@@ -1437,39 +1437,53 @@ if (window.AFAS && window.AFAS.client) {
   });
 }
 
+function showDebugBanner(msg) {
+  let b = document.getElementById('debug-banner');
+  if (!b) {
+    b = document.createElement('div');
+    b.id = 'debug-banner';
+    b.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:#c00;color:#fff;padding:12px;font-size:13px;white-space:pre-wrap;direction:ltr;text-align:left;max-height:60vh;overflow:auto;';
+    document.body.prepend(b);
+  }
+  b.textContent += msg + '\n\n';
+}
 window.onload = function () {
-  initAuthUI();
-  let savedTheme = null;
-  try { savedTheme = localStorage.getItem('theme'); } catch (e) {}
-  if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-    document.documentElement.classList.add('dark');
+  try {
+    initAuthUI();
+    let savedTheme = null;
+    try { savedTheme = localStorage.getItem('theme'); } catch (e) {}
+    if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    }
+
+    const firstTab = document.querySelector('.nav-btn[data-tab="hero"]');
+    if (firstTab) {
+      setTimeout(() => switchTab('hero', firstTab), 50);
+    }
+
+    archiveData = fallbackData;
+    renderArchiveItems();
+    applyCachedCms();
+    refreshDynamicSections();
+
+    const withTimeout = (promise, ms) => Promise.race([
+      promise,
+      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), ms))
+    ]);
+    showDebugBanner('DEBUG: starting loadArchiveData...');
+    withTimeout(loadArchiveData(), 8000)
+      .then(() => {
+        showDebugBanner('DEBUG: loadArchiveData resolved OK. archiveData.length = ' + archiveData.length);
+        renderArchiveItems();
+        refreshDynamicSections();
+        showDebugBanner('DEBUG: renderArchiveItems + refreshDynamicSections called after reload.');
+      })
+      .catch((e) => showDebugBanner('DEBUG ERROR in loadArchiveData chain: ' + (e && e.stack ? e.stack : e)));
+    withTimeout(loadCmsData(), 8000)
+      .catch((e) => showDebugBanner('DEBUG ERROR in loadCmsData: ' + (e && e.stack ? e.stack : e)));
+  } catch (e) {
+    showDebugBanner('DEBUG FATAL ERROR in window.onload: ' + (e && e.stack ? e.stack : e));
   }
-
-  const firstTab = document.querySelector('.nav-btn[data-tab="hero"]');
-  if (firstTab) {
-    setTimeout(() => switchTab('hero', firstTab), 50);
-  }
-
-  // Show the local baseline documents immediately — never leave the
-  // page blank while we wait on the network/database.
-  archiveData = fallbackData;
-  renderArchiveItems();
-  applyCachedCms();
-  refreshDynamicSections();
-
-  // Then try to fetch the live list from the database in the
-  // background (with its own timeout), and refresh the grid if it
-  // succeeds. If it fails, is slow, or hangs, the baseline above
-  // is still shown, so the visitor is never left with a blank page.
-  const withTimeout = (promise, ms) => Promise.race([
-    promise,
-    new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), ms))
-  ]);
-  withTimeout(loadArchiveData(), 8000)
-    .then(() => { renderArchiveItems(); refreshDynamicSections(); })
-    .catch((e) => console.warn('تعذر تحديث الوثائق من قاعدة البيانات في الوقت المناسب:', e));
-  withTimeout(loadCmsData(), 8000)
-    .catch((e) => console.warn('تعذر تحميل محتوى الموقع المعدَّل:', e));
 }
 </script>
 </body>
