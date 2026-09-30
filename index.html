@@ -144,7 +144,7 @@ body { animation: pageIn 0.6s ease both; }
   width: 100%;
   height: 100%;
   object-fit: cover;
-  opacity: 0.42;
+  opacity: var(--flag-opacity, 0.42);
   filter: saturate(0.9);
   transform-origin: 40% 50%;
   /* 1) pull back from a close-up, 2) then a very gentle drift */
@@ -154,12 +154,12 @@ body { animation: pageIn 0.6s ease both; }
   will-change: transform;
 }
 @keyframes flagPullback {
-  from { transform: scale(1.45); opacity: 0; }
-  to   { transform: scale(1);    opacity: 0.42; }
+  from { transform: scale(calc(var(--flag-scale, 1) * 1.45)); opacity: 0; }
+  to   { transform: scale(var(--flag-scale, 1)); opacity: var(--flag-opacity, 0.42); }
 }
 @keyframes flagDrift {
-  from { transform: scale(1)    translate3d(0, 0, 0); }
-  to   { transform: scale(1.03) translate3d(-6px, -2px, 0); }
+  from { transform: scale(var(--flag-scale, 1)) translate3d(0, 0, 0); }
+  to   { transform: scale(calc(var(--flag-scale, 1) * 1.03)) translate3d(-6px, -2px, 0); }
 }
 .hero-flag-shade {
   position: absolute;
@@ -169,8 +169,8 @@ body { animation: pageIn 0.6s ease both; }
 }
 @media (max-width: 640px) {
   .hero-flag { width: 100%; aspect-ratio: auto; -webkit-mask-image: none; mask-image: none; }
-  .hero-flag img { opacity: 0.25; }
-  @keyframes flagPullback { from { transform: scale(1.45); opacity: 0; } to { transform: scale(1); opacity: 0.25; } }
+  .hero-flag img { opacity: var(--flag-opacity, 0.25); }
+  @keyframes flagPullback { from { transform: scale(calc(var(--flag-scale, 1) * 1.45)); opacity: 0; } to { transform: scale(var(--flag-scale, 1)); opacity: var(--flag-opacity, 0.25); } }
 }
 
 /* ===== AFAS badge ===== */
@@ -298,7 +298,7 @@ html[dir="ltr"] .hero-flag-shade {
 <div class="flex items-center justify-between h-20">
 <!-- Logo & Brand -->
 <div class="flex items-center space-x-3 space-x-reverse cursor-pointer group min-w-0 flex-1" onclick="switchTab('hero')">
-<div class="w-12 h-12 flex-shrink-0 rounded-xl bg-gradient-to-br from-archive-500 to-archive-700 flex items-center justify-center text-white shadow-md shadow-archive-500/20 group-hover:scale-105 transition-transform duration-300">
+<div id="site-logo-tile" class="w-12 h-12 flex-shrink-0 rounded-xl bg-gradient-to-br from-archive-500 to-archive-700 flex items-center justify-center text-white shadow-md shadow-archive-500/20 group-hover:scale-105 transition-transform duration-300">
 <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
 </svg>
@@ -389,8 +389,8 @@ html[dir="ltr"] .hero-flag-shade {
 <!-- French Sudan flag backdrop -->
 <div class="hero-flag" aria-hidden="true">
 <picture>
-<source media="(max-width: 640px)" srcset="data:image/webp;base64,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">
-<img src="data:image/webp;base64,UklGRqwFAABXRUJQVlA4TJ8FAAAv/0TVEJWO2gBIEPj/bwOMNSLUtm3DpNdNV+AzJSnyXZo3oh+JMDrEDyp801G1lvm/OADb2LZt1EAR5HrRiBYU/mLhHWesEf0DAgGK1jtihyFMsEJBI0lt8A30RscBCAmIh5rNZpkASrRtHZOksm3btm3bGtq2XW3b7pFtl23btiJi2n/87xVv+yXvH39F9H8Chv0Ldf2oARfqZKtLXqj8x3/8x3/8x3/8x3/8x3/8x3/8x3/8x3/8x3/8x3/8x3/8x3/8x3/8x3/8x3/8x3/8x3/8x3/8x3/8x3/8x3/8x3/8x3/8x3/8x3/8x3/8x3/8x3/8F9suHY+NQJ4D3z4zokWpfBkTJTCz+Ejsv1Ej/W//ATnBtY+2y2B/cMb2j60LgptLb3fNmsDhbN3evYxrVgzPnCAs0/f9Oohozi4oYGFccOE5NHNiRiYL83QTiGSOjkljLvTGHUcxgdeyJHBp3KM3IMyqGubiSkvwy4XBiczViYdGg5dNZcz1JdZBl39SJxAwxaO45XxvE7JfNGg5WcPErHIMsuwunkDQwjsAy4Y8JmrONXDl9wwmbMYlYGVjJhM3sw9V9uczgXPvASonSprIpU7ClMvVTehaV1DKQBN7KEh53wR/G6LsSC9Z3E6A8n8lE73KVXwy3YSfDU+2p5AuZRw6aWXiNwcnvin4ATS5mEeD/JeRySOm4pPA5Fo+HfJexSXPmZIvwZIbRbUofB2VvGVqvoNKGunRFJQcSKxHon2YZJ4puhCTlNCkFCRZZqquQCTTdZmFSOro0gCQXEyuS7I4PPKFKfsNHpmgzRQ8Uleb+ngkszbZ4MhJU/cUGvlVnyVo5GV9XkMjE/SZhEb66dMXjXTSpxUaaapPdTRSQ58yaKS0PkXRSAF98qGRIvoURCMV9SmBRurpUx6NtNanARrprk8XNDJAn4FoZJE+D6KRD/T5GI1s1mcbGrmWVJuk8WiERbUpQTjSVZvueOQpbZ7FI5u0uQ8cfjNHPRcxty4+XeyZox5y6K1LP0QSrctriORUck1SnEYk7KxJd0KSDzT5BJNcy6pHtmuYhMP0GEFQsj2xFv5WVMJuWvQmLFmTUIeY9biEbXXoRGCyRIWEK5AJu2vQl9DkcHr50h3CJnxYvicITq5XkK5sBJ3wV1+2JEsITzhLtnkEKIGmkjW6gVB4NKdc2Q8TovBbXyr/B4IUPivVE4QpnCHTbAIVDpdoIKFKoKs8HW5gFV7tIU3nyyGwwuAYWYYFCFfIhQnliPEpKdDgi8mkSP5KCLRwRWEZ8v9O2MKz3STocIrAhcHHkruNT4TEDRvktubuarCR8IX8KK97cr5GiQMHz45M5o7kY86FQAx5ZEKq8Evef39I6MxBHpsRHV5phh+i2KmDPPlYlfCp9u8pCp47SG6eUTAccg9fQ9mjBxlYsiDOmbiFSwOUPnyQ9JzxqCD/8R//8R//8R//8R//8R//8R//HSlr1EXBc5t/Iwqe2eDWn//4j//4j//+9h//8V/UW19D+zLOxNzXfv29cPp7zni8ReQ//uM//uM//uM//uM//uM//uM//uM//uM//uM//uM//uM//uM//uM//uM//uM//uM//uM//uM//uM//uM//uM//uM//uM//uM//uM//uM//uM//uM//uM//uM/2Li6X/sPnYmKaH/t4Ty7rfnzH//xH//97T/+4z/+Oww29/1b4LnYwOMtsPe3//iP//iP//iP//iP//iP//iP//iP//iP//iP//iP//iP//iP//hvx7C1i6O8FdoacZT3wt0e5z/+4z/+4z/+4z/+4z/+4z/+4z/+4z/+4z/+4z/+4z/+4z/+4z/+4z/+4z/+4z/+4z/+4z/+4z/+4z/+4z/+4z/+4z/+4z/+4z/+4z/+462xz0JdfmmAhToL6ZMWKgA=" alt="" loading="eager" decoding="async">
+<source id="hero-flag-source" media="(max-width: 640px)" srcset="data:image/webp;base64,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">
+<img id="hero-flag-img" src="data:image/webp;base64,UklGRqwFAABXRUJQVlA4TJ8FAAAv/0TVEJWO2gBIEPj/bwOMNSLUtm3DpNdNV+AzJSnyXZo3oh+JMDrEDyp801G1lvm/OADb2LZt1EAR5HrRiBYU/mLhHWesEf0DAgGK1jtihyFMsEJBI0lt8A30RscBCAmIh5rNZpkASrRtHZOksm3btm3bGtq2XW3b7pFtl23btiJi2n/87xVv+yXvH39F9H8Chv0Ldf2oARfqZKtLXqj8x3/8x3/8x3/8x3/8x3/8x3/8x3/8x3/8x3/8x3/8x3/8x3/8x3/8x3/8x3/8x3/8x3/8x3/8x3/8x3/8x3/8x3/8x3/8x3/8x3/8x3/8x3/8x3/8F9suHY+NQJ4D3z4zokWpfBkTJTCz+Ejsv1Ej/W//ATnBtY+2y2B/cMb2j60LgptLb3fNmsDhbN3evYxrVgzPnCAs0/f9Oohozi4oYGFccOE5NHNiRiYL83QTiGSOjkljLvTGHUcxgdeyJHBp3KM3IMyqGubiSkvwy4XBiczViYdGg5dNZcz1JdZBl39SJxAwxaO45XxvE7JfNGg5WcPErHIMsuwunkDQwjsAy4Y8JmrONXDl9wwmbMYlYGVjJhM3sw9V9uczgXPvASonSprIpU7ClMvVTehaV1DKQBN7KEh53wR/G6LsSC9Z3E6A8n8lE73KVXwy3YSfDU+2p5AuZRw6aWXiNwcnvin4ATS5mEeD/JeRySOm4pPA5Fo+HfJexSXPmZIvwZIbRbUofB2VvGVqvoNKGunRFJQcSKxHon2YZJ4puhCTlNCkFCRZZqquQCTTdZmFSOro0gCQXEyuS7I4PPKFKfsNHpmgzRQ8Uleb+ngkszbZ4MhJU/cUGvlVnyVo5GV9XkMjE/SZhEb66dMXjXTSpxUaaapPdTRSQ58yaKS0PkXRSAF98qGRIvoURCMV9SmBRurpUx6NtNanARrprk8XNDJAn4FoZJE+D6KRD/T5GI1s1mcbGrmWVJuk8WiERbUpQTjSVZvueOQpbZ7FI5u0uQ8cfjNHPRcxty4+XeyZox5y6K1LP0QSrctriORUck1SnEYk7KxJd0KSDzT5BJNcy6pHtmuYhMP0GEFQsj2xFv5WVMJuWvQmLFmTUIeY9biEbXXoRGCyRIWEK5AJu2vQl9DkcHr50h3CJnxYvicITq5XkK5sBJ3wV1+2JEsITzhLtnkEKIGmkjW6gVB4NKdc2Q8TovBbXyr/B4IUPivVE4QpnCHTbAIVDpdoIKFKoKs8HW5gFV7tIU3nyyGwwuAYWYYFCFfIhQnliPEpKdDgi8mkSP5KCLRwRWEZ8v9O2MKz3STocIrAhcHHkruNT4TEDRvktubuarCR8IX8KK97cr5GiQMHz45M5o7kY86FQAx5ZEKq8Evef39I6MxBHpsRHV5phh+i2KmDPPlYlfCp9u8pCp47SG6eUTAccg9fQ9mjBxlYsiDOmbiFSwOUPnyQ9JzxqCD/8R//8R//8R//8R//8R//8R//HSlr1EXBc5t/Iwqe2eDWn//4j//4j//+9h//8V/UW19D+zLOxNzXfv29cPp7zni8ReQ//uM//uM//uM//uM//uM//uM//uM//uM//uM//uM//uM//uM//uM//uM//uM//uM//uM//uM//uM//uM//uM//uM//uM//uM//uM//uM//uM//uM//uM//uM/2Li6X/sPnYmKaH/t4Ty7rfnzH//xH//97T/+4z/+Oww29/1b4LnYwOMtsPe3//iP//iP//iP//iP//iP//iP//iP//iP//iP//iP//iP//iP//hvx7C1i6O8FdoacZT3wt0e5z/+4z/+4z/+4z/+4z/+4z/+4z/+4z/+4z/+4z/+4z/+4z/+4z/+4z/+4z/+4z/+4z/+4z/+4z/+4z/+4z/+4z/+4z/+4z/+4z/+4z/+462xz0JdfmmAhToL6ZMWKgA=" alt="" loading="eager" decoding="async">
 </picture>
 </div>
 <div class="hero-flag-shade" aria-hidden="true"></div>
@@ -423,19 +423,19 @@ html[dir="ltr"] .hero-flag-shade {
 <!-- Quick Stats Counters -->
 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
 <div class="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-archive-200/60 dark:border-slate-800 shadow-sm text-center interactive-card">
-<span class="text-3xl sm:text-4xl font-extrabold text-archive-600 dark:text-archive-400 block mb-1">1,420+</span>
+<span class="text-3xl sm:text-4xl font-extrabold text-archive-600 dark:text-archive-400 block mb-1" data-i18n="stat_docs_n">1,420+</span>
 <span class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium" data-i18n="stat_docs">وثيقة ومخطوطة</span>
 </div>
 <div class="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-archive-200/60 dark:border-slate-800 shadow-sm text-center interactive-card">
-<span class="text-3xl sm:text-4xl font-extrabold text-archive-600 dark:text-archive-400 block mb-1">85</span>
+<span class="text-3xl sm:text-4xl font-extrabold text-archive-600 dark:text-archive-400 block mb-1" data-i18n="stat_figures_n">85</span>
 <span class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium" data-i18n="stat_figures">شخصية بارزة</span>
 </div>
 <div class="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-archive-200/60 dark:border-slate-800 shadow-sm text-center interactive-card">
-<span class="text-3xl sm:text-4xl font-extrabold text-archive-600 dark:text-archive-400 block mb-1">12</span>
+<span class="text-3xl sm:text-4xl font-extrabold text-archive-600 dark:text-archive-400 block mb-1" data-i18n="stat_eras_n">12</span>
 <span class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium" data-i18n="stat_eras">حقبة زمنية</span>
 </div>
 <div class="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-archive-200/60 dark:border-slate-800 shadow-sm text-center interactive-card">
-<span class="text-3xl sm:text-4xl font-extrabold text-archive-600 dark:text-archive-400 block mb-1">100%</span>
+<span class="text-3xl sm:text-4xl font-extrabold text-archive-600 dark:text-archive-400 block mb-1" data-i18n="stat_digit_n">100%</span>
 <span class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium" data-i18n="stat_digit">رقمنة عالية الدقة</span>
 </div>
 </div>
@@ -509,54 +509,8 @@ class="search-input w-full pl-4 pr-10 py-3 rounded-xl bg-white dark:bg-slate-900
 <h2 class="text-3xl font-bold text-slate-900 dark:text-slate-100" data-i18n="tl_title">التسلسل الزمني للأحداث</h2>
 <p class="text-slate-500 dark:text-slate-400 text-sm" data-i18n="tl_sub">محطات تاريخية رئيسية موثقة بالتواريخ والوثائق الملحقة</p>
 </div>
-<!-- Timeline Vertical Track -->
-<div class="tl-track relative border-r-2 border-archive-300 dark:border-slate-800 mr-4 md:mr-32 my-8 space-y-8">
-<!-- Event 1 -->
-<div class="tl-item relative pr-8 group">
-<div class="tl-dot absolute -right-[11px] top-1.5 w-5 h-5 rounded-full bg-archive-500 border-4 border-archive-50 dark:border-slate-950 shadow group-hover:scale-125 transition-transform duration-300"></div>
-<div class="interactive-card p-6 rounded-2xl bg-white dark:bg-slate-900 border border-archive-200/60 dark:border-slate-800 shadow-sm">
-<span class="inline-block px-3 py-1 text-xs font-bold bg-archive-100 dark:bg-slate-800 text-archive-700 dark:text-archive-300 rounded-lg mb-2" data-i18n="tl1_date">15 مايو 1956</span>
-<h3 class="text-xl font-bold text-slate-900 dark:text-slate-100 mb-2" data-i18n="tl1_title">تأسيس هيئة التنسيق والاتصال الأرشيفي</h3>
-<p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mb-4" data-i18n="tl1_desc">
-صدر القرار التأسيسي لتجميع المراسلات والتقارير الميدانية وتوثيقها بشكل رسمي لحفظ الأرشيف التاريخي.
-</p>
-<button onclick="openModalById('doc-1')" class="text-xs font-bold text-archive-600 dark:text-archive-400 hover:underline flex items-center gap-1">
-<span data-i18n="tl_view">عرض الوثيقة المرفقة</span>
-<svg class="w-4 h-4 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-</button>
-</div>
-</div>
-<!-- Event 2 -->
-<div class="tl-item relative pr-8 group">
-<div class="tl-dot absolute -right-[11px] top-1.5 w-5 h-5 rounded-full bg-archive-500 border-4 border-archive-50 dark:border-slate-950 shadow group-hover:scale-125 transition-transform duration-300"></div>
-<div class="interactive-card p-6 rounded-2xl bg-white dark:bg-slate-900 border border-archive-200/60 dark:border-slate-800 shadow-sm">
-<span class="inline-block px-3 py-1 text-xs font-bold bg-archive-100 dark:bg-slate-800 text-archive-700 dark:text-archive-300 rounded-lg mb-2" data-i18n="tl2_date">10 سبتمبر 1958</span>
-<h3 class="text-xl font-bold text-slate-900 dark:text-slate-100 mb-2" data-i18n="tl2_title">اتفاقية التبادل الوثائقي والدبلوماسي</h3>
-<p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mb-4" data-i18n="tl2_desc">
-مذكرة تفاهم حول تنظيم تداول الوثائق السرية والرسائل الخاصة المتبادلة بين الوفود.
-</p>
-<button onclick="openModalById('doc-2')" class="text-xs font-bold text-archive-600 dark:text-archive-400 hover:underline flex items-center gap-1">
-<span data-i18n="tl_view">عرض الوثيقة المرفقة</span>
-<svg class="w-4 h-4 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-</button>
-</div>
-</div>
-<!-- Event 3 -->
-<div class="tl-item relative pr-8 group">
-<div class="tl-dot absolute -right-[11px] top-1.5 w-5 h-5 rounded-full bg-archive-500 border-4 border-archive-50 dark:border-slate-950 shadow group-hover:scale-125 transition-transform duration-300"></div>
-<div class="interactive-card p-6 rounded-2xl bg-white dark:bg-slate-900 border border-archive-200/60 dark:border-slate-800 shadow-sm">
-<span class="inline-block px-3 py-1 text-xs font-bold bg-archive-100 dark:bg-slate-800 text-archive-700 dark:text-archive-300 rounded-lg mb-2" data-i18n="tl3_date">22 مارس 1962</span>
-<h3 class="text-xl font-bold text-slate-900 dark:text-slate-100 mb-2" data-i18n="tl3_title">اعتماد الأرشيف النهائي وتوثيقه رقمياً</h3>
-<p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mb-4" data-i18n="tl3_desc">
-إنهاء جمع كافة التقارير الرسمية وإيداع نسخة منها في السجلات الوطنية الأرشيفية.
-</p>
-<button onclick="openModalById('doc-3')" class="text-xs font-bold text-archive-600 dark:text-archive-400 hover:underline flex items-center gap-1">
-<span data-i18n="tl_view">عرض الوثيقة المرفقة</span>
-<svg class="w-4 h-4 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-</button>
-</div>
-</div>
-</div>
+<!-- Timeline Vertical Track (filled from the database, or sample content if unreachable) -->
+<div id="timeline-track" class="tl-track relative border-r-2 border-archive-300 dark:border-slate-800 mr-4 md:mr-32 my-8 space-y-8"></div>
 </section>
 
 <!-- SECTION 4: FIGURES VIEW -->
@@ -565,44 +519,7 @@ class="search-input w-full pl-4 pr-10 py-3 rounded-xl bg-white dark:bg-slate-900
 <h2 class="text-3xl font-bold text-slate-900 dark:text-slate-100" data-i18n="nav_figures">الشخصيات التاريخية</h2>
 <p class="text-sm text-slate-500 dark:text-slate-400" data-i18n="fig_sub">سير ذاتية ومستندات متعلقة بأبرز الشخصيات المؤثرة</p>
 </div>
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-<!-- Person Card 1 -->
-<div class="interactive-card bg-white dark:bg-slate-900 rounded-2xl border border-archive-200/60 dark:border-slate-800 p-6 flex flex-col items-center text-center">
-<div class="w-24 h-24 rounded-full bg-gradient-to-tr from-archive-400 to-archive-600 p-1 mb-4 shadow-md">
-<img src="https://placehold.co/200x200/8c5e38/ffffff?text=شخصية+1" data-i18n-alt="alt_figure" alt="شخصية تاريخية" class="w-full h-full object-cover rounded-full">
-</div>
-<h3 class="text-lg font-bold text-slate-900 dark:text-slate-100" data-i18n="p1_name">سليمان الأرشيڤي</h3>
-<span class="text-xs font-medium text-archive-600 dark:text-archive-400 mb-3" data-i18n="p1_role">مؤرخ رئيسي ورئيس اللجنة</span>
-<p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed mb-4" data-i18n="p1_desc">
-أشرف على جمع وتوثيق أكثر من 500 مراسلة تاريخية صادرة في الفترة ما بين 1955 و1962.
-</p>
-<button onclick="showToast(t('toast_profile'))" class="w-full py-2 bg-archive-100 dark:bg-slate-800 text-archive-800 dark:text-archive-300 font-semibold text-xs rounded-xl hover:bg-archive-200 dark:hover:bg-slate-700 transition-colors" data-i18n="p_btn">عرض السيرة والوثائق المرتبطة</button>
-</div>
-<!-- Person Card 2 -->
-<div class="interactive-card bg-white dark:bg-slate-900 rounded-2xl border border-archive-200/60 dark:border-slate-800 p-6 flex flex-col items-center text-center">
-<div class="w-24 h-24 rounded-full bg-gradient-to-tr from-archive-400 to-archive-600 p-1 mb-4 shadow-md">
-<img src="https://placehold.co/200x200/734d33/ffffff?text=شخصية+2" data-i18n-alt="alt_figure" alt="شخصية تاريخية" class="w-full h-full object-cover rounded-full">
-</div>
-<h3 class="text-lg font-bold text-slate-900 dark:text-slate-100" data-i18n="p2_name">د. أمين الدبلوماسي</h3>
-<span class="text-xs font-medium text-archive-600 dark:text-archive-400 mb-3" data-i18n="p2_role">مستشار العلاقات والتصاوير</span>
-<p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed mb-4" data-i18n="p2_desc">
-قاد المفاوضات التوثيقية وحافظ على الأرشيف المصور للقرارات والمعاهدات الثنائية.
-</p>
-<button onclick="showToast(t('toast_profile'))" class="w-full py-2 bg-archive-100 dark:bg-slate-800 text-archive-800 dark:text-archive-300 font-semibold text-xs rounded-xl hover:bg-archive-200 dark:hover:bg-slate-700 transition-colors" data-i18n="p_btn">عرض السيرة والوثائق المرتبطة</button>
-</div>
-<!-- Person Card 3 -->
-<div class="interactive-card bg-white dark:bg-slate-900 rounded-2xl border border-archive-200/60 dark:border-slate-800 p-6 flex flex-col items-center text-center">
-<div class="w-24 h-24 rounded-full bg-gradient-to-tr from-archive-400 to-archive-600 p-1 mb-4 shadow-md">
-<img src="https://placehold.co/200x200/5f402d/ffffff?text=شخصية+3" data-i18n-alt="alt_figure" alt="شخصية تاريخية" class="w-full h-full object-cover rounded-full">
-</div>
-<h3 class="text-lg font-bold text-slate-900 dark:text-slate-100" data-i18n="p3_name">فاطمة التوثيقية</h3>
-<span class="text-xs font-medium text-archive-600 dark:text-archive-400 mb-3" data-i18n="p3_role">أخصائية ترميم المخطوطات</span>
-<p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed mb-4" data-i18n="p3_desc">
-شغلت منصب مسؤولة التدقيق والترميم الكيميائي للرسائل الورقية القديمة في الأرشيف.
-</p>
-<button onclick="showToast(t('toast_profile'))" class="w-full py-2 bg-archive-100 dark:bg-slate-800 text-archive-800 dark:text-archive-300 font-semibold text-xs rounded-xl hover:bg-archive-200 dark:hover:bg-slate-700 transition-colors" data-i18n="p_btn">عرض السيرة والوثائق المرتبطة</button>
-</div>
-</div>
+<div id="figures-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
 </section>
 </main>
 
@@ -617,7 +534,7 @@ class="search-input w-full pl-4 pr-10 py-3 rounded-xl bg-white dark:bg-slate-900
 <div class="flex items-center gap-2 flex-wrap">
 <span id="modal-badge" class="px-3 py-1 rounded-full text-xs font-bold bg-archive-100 dark:bg-slate-800 text-archive-700 dark:text-archive-300">تصنيف</span>
 <span id="modal-verification" class="px-3 py-1 rounded-full text-xs font-bold">قيد المراجعة</span>
-<h3 id="modal-title" class="text-xl font-bold text-slate-900 dark:text-slate-100 w-full mt-1">عنوان الوثيقة</h3>
+<h3 id="modal-title" dir="auto" class="text-xl font-bold text-slate-900 dark:text-slate-100 w-full mt-1">عنوان الوثيقة</h3>
 </div>
 <button onclick="closeModal()" class="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex-shrink-0">
 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
@@ -652,23 +569,23 @@ class="search-input w-full pl-4 pr-10 py-3 rounded-xl bg-white dark:bg-slate-900
 </div>
 <div>
 <h4 class="text-sm font-bold text-slate-800 dark:text-slate-200 mb-1" data-i18n="modal_details">تفاصيل ومحتوى المستند:</h4>
-<p id="modal-desc" class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+<p id="modal-desc" dir="auto" class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
 تفاصيل الوثيقة تظهر هنا...
 </p>
 </div>
 </div>
 
 <div id="doc-panel-transcription" class="hidden-view">
-<p id="modal-transcription" class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed whitespace-pre-line"></p>
+<p id="modal-transcription" dir="auto" class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed whitespace-pre-line"></p>
 </div>
 <div id="doc-panel-translation" class="hidden-view">
-<p id="modal-translation" class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed whitespace-pre-line"></p>
+<div id="modal-translation" class="space-y-4"></div>
 </div>
 <div id="doc-panel-notes" class="hidden-view">
-<p id="modal-notes" class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed whitespace-pre-line"></p>
+<p id="modal-notes" dir="auto" class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed whitespace-pre-line"></p>
 </div>
 <div id="doc-panel-research" class="hidden-view">
-<p id="modal-research" class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed whitespace-pre-line"></p>
+<p id="modal-research" dir="auto" class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed whitespace-pre-line"></p>
 </div>
 
 </div>
@@ -680,6 +597,37 @@ class="search-input w-full pl-4 pr-10 py-3 rounded-xl bg-white dark:bg-slate-900
 <button onclick="closeModal(); showToast(t('toast_pdf'));" class="px-5 py-2 bg-archive-600 hover:bg-archive-500 text-white rounded-xl text-xs font-bold shadow-md transition-colors" data-i18n="modal_dl">
 تحميل الوثيقة بدقة HD
 </button>
+</div>
+</div>
+</div>
+
+<!-- FIGURE (BIOGRAPHY) MODAL -->
+<div id="fig-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-300" role="dialog" aria-modal="true">
+<div onclick="closeFigureModal()" class="absolute inset-0 bg-slate-950/60 backdrop-blur-sm"></div>
+<div id="fig-modal-content" class="relative w-full max-w-2xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-archive-200 dark:border-slate-800 overflow-hidden transform scale-95 transition-all duration-300">
+<div class="flex items-start justify-between gap-3 p-6 border-b border-archive-100 dark:border-slate-800">
+<div class="flex items-center gap-4 min-w-0">
+<div class="w-20 h-20 flex-shrink-0 rounded-full bg-gradient-to-tr from-archive-400 to-archive-600 p-1 shadow-md">
+<img id="fig-modal-img" src="" alt="" class="w-full h-full object-cover rounded-full">
+</div>
+<div class="min-w-0">
+<h3 id="fig-modal-name" dir="auto" class="text-xl font-bold text-slate-900 dark:text-slate-100"></h3>
+<span id="fig-modal-role" dir="auto" class="text-xs font-medium text-archive-600 dark:text-archive-400"></span>
+</div>
+</div>
+<button onclick="closeFigureModal()" data-i18n-aria="aria_close" aria-label="إغلاق" class="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex-shrink-0">
+<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+</button>
+</div>
+<div class="p-6 space-y-6 max-h-[65vh] overflow-y-auto">
+<div>
+<h4 class="text-sm font-bold text-slate-800 dark:text-slate-200 mb-2" data-i18n="fig_bio">السيرة الذاتية</h4>
+<p id="fig-modal-bio" dir="auto" class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed whitespace-pre-line"></p>
+</div>
+<div>
+<h4 class="text-sm font-bold text-slate-800 dark:text-slate-200 mb-2" data-i18n="fig_related">الوثائق المرتبطة</h4>
+<div id="fig-modal-docs" class="space-y-2"></div>
+</div>
 </div>
 </div>
 </div>
@@ -706,307 +654,10 @@ class="search-input w-full pl-4 pr-10 py-3 rounded-xl bg-white dark:bg-slate-900
 </div>
 </footer>
 
+<script src="translations.js"></script>
 <script>
 // ================= Internationalisation (Arabic default · English · French) =================
-const I18N = {
- "ar": {
-  "site_name": "الأرشيفات الفرنسية لقبيلة الأنصار في السودان الفرنسي",
-  "site_tagline": "المنصة التاريخية للتوثيق والبحث",
-  "nav_home": "الرئيسية",
-  "nav_archive": "الأرشيف والوثائق",
-  "nav_timeline": "التسلسل الزمني",
-  "nav_figures": "الشخصيات التاريخية",
-  "hero_badge": "أكبر قاعدة بيانات أرشيفية وثائقية",
-  "hero_title": "اكتشف التاريخ من خلال الوثائق والمراسلات الأصلية",
-  "hero_desc": "منصة تفاعلية مخصصة لـ\"{name}\" توفر إمكانية الوصول إلى آلاف المخطوطات والقرارات التاريخية والتسلسلات الزمنية مع إمكانية البحث المتقدم.",
-  "hero_btn_browse": "تصفح الأرشيف الكامل",
-  "hero_btn_timeline": "استكشف الخط الزمني",
-  "stat_docs": "وثيقة ومخطوطة",
-  "stat_figures": "شخصية بارزة",
-  "stat_eras": "حقبة زمنية",
-  "stat_digit": "رقمنة عالية الدقة",
-  "feat_title": "أبرز الأقسام الأرشيفية",
-  "feat_sub": "تصفح الأرشيف حسب التصنيفات الرئيسية",
-  "feat_corr": "المراسلات الرسمية",
-  "feat_corr_d": "خطابات، برقيات، ورسائل دبلوماسية تاريخية بين الأطراف المعنية.",
-  "feat_dec": "القرارات والمعاهدات",
-  "feat_dec_d": "اتفاقيات رسمية وبنود ومستندات الإعلان والاتفاق التاريخي.",
-  "photo_archive": "الأرشيف المصور",
-  "feat_photo_d": "لقطات نادرة ومستندات مصورة بدقة عالية مع الشروح التاريخية.",
-  "archive_sub": "ابحث وتصفح الوثائق التاريخية الرقمية بسهولة",
-  "search_ph": "ابحث في عنوان أو رقم الوثيقة...",
-  "filter_all": "الكل",
-  "filter_corr": "المراسلات",
-  "filter_dec": "القرارات",
-  "filter_memo": "المذكرات والتقارير",
-  "tl_title": "التسلسل الزمني للأحداث",
-  "tl_sub": "محطات تاريخية رئيسية موثقة بالتواريخ والوثائق الملحقة",
-  "tl1_date": "15 مايو 1956",
-  "tl1_title": "تأسيس هيئة التنسيق والاتصال الأرشيفي",
-  "tl1_desc": "صدر القرار التأسيسي لتجميع المراسلات والتقارير الميدانية وتوثيقها بشكل رسمي لحفظ الأرشيف التاريخي.",
-  "tl2_date": "10 سبتمبر 1958",
-  "tl2_title": "اتفاقية التبادل الوثائقي والدبلوماسي",
-  "tl2_desc": "مذكرة تفاهم حول تنظيم تداول الوثائق السرية والرسائل الخاصة المتبادلة بين الوفود.",
-  "tl3_date": "22 مارس 1962",
-  "tl3_title": "اعتماد الأرشيف النهائي وتوثيقه رقمياً",
-  "tl3_desc": "إنهاء جمع كافة التقارير الرسمية وإيداع نسخة منها في السجلات الوطنية الأرشيفية.",
-  "tl_view": "عرض الوثيقة المرفقة",
-  "fig_sub": "سير ذاتية ومستندات متعلقة بأبرز الشخصيات المؤثرة",
-  "p1_name": "سليمان الأرشيڤي",
-  "p1_role": "مؤرخ رئيسي ورئيس اللجنة",
-  "p1_desc": "أشرف على جمع وتوثيق أكثر من 500 مراسلة تاريخية صادرة في الفترة ما بين 1955 و1962.",
-  "p2_name": "د. أمين الدبلوماسي",
-  "p2_role": "مستشار العلاقات والتصاوير",
-  "p2_desc": "قاد المفاوضات التوثيقية وحافظ على الأرشيف المصور للقرارات والمعاهدات الثنائية.",
-  "p3_name": "فاطمة التوثيقية",
-  "p3_role": "أخصائية ترميم المخطوطات",
-  "p3_desc": "شغلت منصب مسؤولة التدقيق والترميم الكيميائي للرسائل الورقية القديمة في الأرشيف.",
-  "p_btn": "عرض السيرة والوثائق المرتبطة",
-  "modal_cat": "تصنيف",
-  "verif_pending": "قيد المراجعة",
-  "verif_ok": "موثق ومعتمد",
-  "verif_unsure": "غير مؤكد",
-  "modal_title_ph": "عنوان الوثيقة",
-  "tab_source": "المصدر الأصلي",
-  "tab_transcription": "التفريغ النصي",
-  "tab_translation": "الترجمة",
-  "tab_notes": "الهوامش والتحقيق",
-  "tab_research": "الدراسة والتحليل",
-  "modal_date_lbl": "تاريخ الوثيقة:",
-  "modal_code_lbl": "الرقم الأرشيفي:",
-  "modal_details": "تفاصيل ومحتوى المستند:",
-  "modal_desc_ph": "تفاصيل الوثيقة تظهر هنا...",
-  "modal_copy": "نسخ الرقم المرجعي",
-  "modal_dl": "تحميل الوثيقة بدقة HD",
-  "toast_default": "إشعار النظام",
-  "no_transcription": "لم تتم إضافة التفريغ النصي لهذه الوثيقة بعد.",
-  "no_translation": "لم تتم إضافة الترجمة العربية لهذه الوثيقة بعد.",
-  "no_notes": "لا توجد هوامش تحقيق مضافة بعد.",
-  "no_research": "لا توجد دراسة تحليلية مضافة بعد.",
-  "no_results": "لم يتم العثور على وثائق تطابق خيارات البحث",
-  "view_doc": "استعراض الوثيقة",
-  "cat_مراسلات": "مراسلات",
-  "cat_قرارات": "قرارات",
-  "cat_صور": "صور",
-  "cat_مذكرات": "مذكرات",
-  "toast_profile": "تم تحميل ملف الشخصية",
-  "toast_pdf": "جاري فتح ملف PDF عالي الدقة...",
-  "toast_copied": "تم نسخ الرقم المرجعي للوثيقة إلى الحافظة",
-  "toast_ref": "الرقم المرجعي: ",
-  "toast_dark": "تم تفعيل الوضع الليلي",
-  "toast_light": "تم تفعيل الوضع النهارى",
-  "toast_privacy": "سياسة الخصوصية",
-  "toast_terms": "الشروط والأحكام",
-  "toast_lang": "تم تغيير اللغة إلى العربية",
-  "footer_usage": "سياسة الاستخدام",
-  "footer_standards": "معايير التوثيق",
-  "footer_copy": "جميع الحقوق محفوظة © 2026 منصة الأرشيف التاريخي - {name}.",
-  "page_title": "منصة الأرشيف التاريخي - {name}",
-  "aria_theme": "تغيير المظهر",
-  "aria_lang": "اللغة",
-  "aria_menu": "القائمة",
-  "alt_figure": "شخصية تاريخية",
-  "alt_preview": "معاينة الوثيقة"
- },
- "en": {
-  "site_name": "French Archives of the Ansar Tribe in French Sudan",
-  "site_tagline": "The historical platform for documentation and research",
-  "nav_home": "Home",
-  "nav_archive": "Archive & documents",
-  "nav_timeline": "Timeline",
-  "nav_figures": "Historical figures",
-  "hero_badge": "The largest documentary archive database",
-  "hero_title": "Discover history through original documents and correspondence",
-  "hero_desc": "An interactive platform dedicated to “{name}”, giving access to thousands of manuscripts, historical decisions and chronologies, with advanced search.",
-  "hero_btn_browse": "Browse the full archive",
-  "hero_btn_timeline": "Explore the timeline",
-  "stat_docs": "Documents & manuscripts",
-  "stat_figures": "Notable figures",
-  "stat_eras": "Historical periods",
-  "stat_digit": "High-resolution digitisation",
-  "feat_title": "Featured archive sections",
-  "feat_sub": "Browse the archive by main category",
-  "feat_corr": "Official correspondence",
-  "feat_corr_d": "Historic letters, telegrams and diplomatic messages between the parties concerned.",
-  "feat_dec": "Decisions & treaties",
-  "feat_dec_d": "Official agreements, clauses and the documents of historic declarations and accords.",
-  "photo_archive": "Photographic archive",
-  "feat_photo_d": "Rare shots and high-resolution photographed documents with historical commentary.",
-  "archive_sub": "Search and browse the digital historical documents with ease",
-  "search_ph": "Search by document title or number...",
-  "filter_all": "All",
-  "filter_corr": "Correspondence",
-  "filter_dec": "Decisions",
-  "filter_memo": "Memoranda & reports",
-  "tl_title": "Timeline of events",
-  "tl_sub": "Key historical milestones documented with dates and attached records",
-  "tl1_date": "15 May 1956",
-  "tl1_title": "Founding of the Archival Coordination and Liaison Body",
-  "tl1_desc": "The founding decision was issued to gather correspondence and field reports and document them officially in order to preserve the historical archive.",
-  "tl2_date": "10 September 1958",
-  "tl2_title": "Documentary and Diplomatic Exchange Agreement",
-  "tl2_desc": "A memorandum of understanding on regulating the circulation of confidential documents and private messages exchanged between delegations.",
-  "tl3_date": "22 March 1962",
-  "tl3_title": "Adoption of the final archive and its digital documentation",
-  "tl3_desc": "Completion of the collection of all official reports and deposit of a copy in the national archival registers.",
-  "tl_view": "View attached document",
-  "fig_sub": "Biographies and documents about the most influential figures",
-  "p1_name": "Suleiman Al-Archivi",
-  "p1_role": "Lead historian and committee chair",
-  "p1_desc": "Oversaw the collection and documentation of more than 500 historical letters issued between 1955 and 1962.",
-  "p2_name": "Dr. Amin Al-Diplomasi",
-  "p2_role": "Adviser on relations and photographic records",
-  "p2_desc": "Led the documentation negotiations and safeguarded the photographic archive of decisions and bilateral treaties.",
-  "p3_name": "Fatima Al-Tawthiqiya",
-  "p3_role": "Manuscript restoration specialist",
-  "p3_desc": "Served as head of verification and chemical restoration of the archive's old paper letters.",
-  "p_btn": "View biography & related documents",
-  "modal_cat": "Category",
-  "verif_pending": "Under review",
-  "verif_ok": "Verified & approved",
-  "verif_unsure": "Unconfirmed",
-  "modal_title_ph": "Document title",
-  "tab_source": "Original source",
-  "tab_transcription": "Transcription",
-  "tab_translation": "Translation",
-  "tab_notes": "Footnotes & critical notes",
-  "tab_research": "Study & analysis",
-  "modal_date_lbl": "Document date:",
-  "modal_code_lbl": "Archive number:",
-  "modal_details": "Document details and content:",
-  "modal_desc_ph": "Document details appear here...",
-  "modal_copy": "Copy reference number",
-  "modal_dl": "Download document in HD",
-  "toast_default": "System notice",
-  "no_transcription": "No transcription has been added for this document yet.",
-  "no_translation": "No translation has been added for this document yet.",
-  "no_notes": "No critical notes have been added yet.",
-  "no_research": "No analytical study has been added yet.",
-  "no_results": "No documents match your search",
-  "view_doc": "View document",
-  "cat_مراسلات": "Correspondence",
-  "cat_قرارات": "Decisions",
-  "cat_صور": "Photographs",
-  "cat_مذكرات": "Memoranda",
-  "toast_profile": "Profile loaded",
-  "toast_pdf": "Opening the high-resolution PDF...",
-  "toast_copied": "Reference number copied to the clipboard",
-  "toast_ref": "Reference number: ",
-  "toast_dark": "Dark mode enabled",
-  "toast_light": "Light mode enabled",
-  "toast_privacy": "Privacy policy",
-  "toast_terms": "Terms and conditions",
-  "toast_lang": "Language changed to English",
-  "footer_usage": "Usage policy",
-  "footer_standards": "Documentation standards",
-  "footer_copy": "© 2026 Historical Archive Platform – {name}. All rights reserved.",
-  "page_title": "Historical Archive Platform - {name}",
-  "aria_theme": "Toggle theme",
-  "aria_lang": "Language",
-  "aria_menu": "Menu",
-  "alt_figure": "Historical figure",
-  "alt_preview": "Document preview"
- },
- "fr": {
-  "site_name": "Archives françaises de la tribu des Ansar au Soudan français",
-  "site_tagline": "La plateforme historique de documentation et de recherche",
-  "nav_home": "Accueil",
-  "nav_archive": "Archives et documents",
-  "nav_timeline": "Chronologie",
-  "nav_figures": "Personnalités historiques",
-  "hero_badge": "La plus grande base de données d'archives documentaires",
-  "hero_title": "Découvrez l'histoire à travers les documents et la correspondance d'origine",
-  "hero_desc": "Une plateforme interactive consacrée aux « {name} », donnant accès à des milliers de manuscrits, de décisions historiques et de chronologies, avec une recherche avancée.",
-  "hero_btn_browse": "Parcourir l'ensemble des archives",
-  "hero_btn_timeline": "Explorer la chronologie",
-  "stat_docs": "Documents et manuscrits",
-  "stat_figures": "Personnalités marquantes",
-  "stat_eras": "Périodes historiques",
-  "stat_digit": "Numérisation haute définition",
-  "feat_title": "Sections d'archives à la une",
-  "feat_sub": "Parcourez les archives par grande catégorie",
-  "feat_corr": "Correspondance officielle",
-  "feat_corr_d": "Lettres, télégrammes et messages diplomatiques historiques entre les parties concernées.",
-  "feat_dec": "Décisions et traités",
-  "feat_dec_d": "Accords officiels, clauses et documents de déclarations et d'accords historiques.",
-  "photo_archive": "Archives photographiques",
-  "feat_photo_d": "Clichés rares et documents photographiés en haute définition, accompagnés de commentaires historiques.",
-  "archive_sub": "Recherchez et parcourez facilement les documents historiques numérisés",
-  "search_ph": "Rechercher par titre ou numéro de document...",
-  "filter_all": "Tout",
-  "filter_corr": "Correspondance",
-  "filter_dec": "Décisions",
-  "filter_memo": "Mémorandums et rapports",
-  "tl_title": "Chronologie des événements",
-  "tl_sub": "Grandes étapes historiques documentées par des dates et des pièces jointes",
-  "tl1_date": "15 mai 1956",
-  "tl1_title": "Création de l'organe de coordination et de liaison archivistique",
-  "tl1_desc": "La décision fondatrice a été prise afin de rassembler la correspondance et les rapports de terrain et de les documenter officiellement pour préserver les archives historiques.",
-  "tl2_date": "10 septembre 1958",
-  "tl2_title": "Accord d'échange documentaire et diplomatique",
-  "tl2_desc": "Protocole d'accord réglementant la circulation des documents confidentiels et des messages privés échangés entre les délégations.",
-  "tl3_date": "22 mars 1962",
-  "tl3_title": "Adoption des archives définitives et de leur documentation numérique",
-  "tl3_desc": "Achèvement de la collecte de tous les rapports officiels et dépôt d'une copie dans les registres nationaux d'archives.",
-  "tl_view": "Voir le document joint",
-  "fig_sub": "Biographies et documents sur les personnalités les plus influentes",
-  "p1_name": "Souleiman Al-Archivi",
-  "p1_role": "Historien principal et président du comité",
-  "p1_desc": "A supervisé la collecte et la documentation de plus de 500 correspondances historiques émises entre 1955 et 1962.",
-  "p2_name": "Dr Amine Al-Diplomasi",
-  "p2_role": "Conseiller pour les relations et les archives photographiques",
-  "p2_desc": "A mené les négociations documentaires et préservé les archives photographiques des décisions et des traités bilatéraux.",
-  "p3_name": "Fatima Al-Tawthiqiya",
-  "p3_role": "Spécialiste de la restauration des manuscrits",
-  "p3_desc": "A occupé le poste de responsable de la vérification et de la restauration chimique des anciennes lettres sur papier des archives.",
-  "p_btn": "Voir la biographie et les documents associés",
-  "modal_cat": "Catégorie",
-  "verif_pending": "En cours de révision",
-  "verif_ok": "Vérifié et approuvé",
-  "verif_unsure": "Non confirmé",
-  "modal_title_ph": "Titre du document",
-  "tab_source": "Source originale",
-  "tab_transcription": "Transcription",
-  "tab_translation": "Traduction",
-  "tab_notes": "Notes et apparat critique",
-  "tab_research": "Étude et analyse",
-  "modal_date_lbl": "Date du document :",
-  "modal_code_lbl": "Numéro d'archive :",
-  "modal_details": "Détails et contenu du document :",
-  "modal_desc_ph": "Les détails du document apparaissent ici...",
-  "modal_copy": "Copier le numéro de référence",
-  "modal_dl": "Télécharger le document en HD",
-  "toast_default": "Notification du système",
-  "no_transcription": "Aucune transcription n'a encore été ajoutée pour ce document.",
-  "no_translation": "Aucune traduction n'a encore été ajoutée pour ce document.",
-  "no_notes": "Aucune note critique n'a encore été ajoutée.",
-  "no_research": "Aucune étude analytique n'a encore été ajoutée.",
-  "no_results": "Aucun document ne correspond à votre recherche",
-  "view_doc": "Consulter le document",
-  "cat_مراسلات": "Correspondance",
-  "cat_قرارات": "Décisions",
-  "cat_صور": "Photographies",
-  "cat_مذكرات": "Mémorandums",
-  "toast_profile": "Profil chargé",
-  "toast_pdf": "Ouverture du PDF haute définition...",
-  "toast_copied": "Numéro de référence copié dans le presse-papiers",
-  "toast_ref": "Numéro de référence : ",
-  "toast_dark": "Mode sombre activé",
-  "toast_light": "Mode clair activé",
-  "toast_privacy": "Politique de confidentialité",
-  "toast_terms": "Conditions générales",
-  "toast_lang": "Langue changée en français",
-  "footer_usage": "Politique d'utilisation",
-  "footer_standards": "Normes de documentation",
-  "footer_copy": "© 2026 Plateforme d'archives historiques – {name}. Tous droits réservés.",
-  "page_title": "Plateforme d'archives historiques - {name}",
-  "aria_theme": "Changer le thème",
-  "aria_lang": "Langue",
-  "aria_menu": "Menu",
-  "alt_figure": "Personnalité historique",
-  "alt_preview": "Aperçu du document"
- }
-};
+// (the dictionary I18N lives in translations.js)
 const SUPPORTED_LANGS = ['ar', 'en', 'fr'];
 const LANG_DIR = { ar: 'rtl', en: 'ltr', fr: 'ltr' };
 let currentLang = document.documentElement.lang;
@@ -1084,8 +735,9 @@ function setLanguage(lang) {
   updateLangUI();
   closeLangMenu();
   if (typeof renderArchiveItems === 'function' && typeof archiveData !== 'undefined') renderArchiveItems();
+  if (typeof refreshDynamicSections === 'function') refreshDynamicSections();
   if (typeof currentModalId !== 'undefined' && currentModalId && typeof archiveData !== 'undefined') {
-    const item = archiveData.find(d => d.id === currentModalId);
+    const item = archiveData.find(d => String(d.id) === String(currentModalId));
     if (item) fillModal(item);
   }
   const menu = document.getElementById('mobile-menu');
@@ -1134,6 +786,7 @@ async function loadArchiveData() {
           desc: d.description || '',
           transcription: d.transcription_text,
           translation: d.translation_text,
+          translationEn: d.translation_en_text,
           notes: d.editorial_notes,
           research: d.research_notes,
           verification: d.verification_status || 'قيد المراجعة',
@@ -1243,10 +896,10 @@ function renderArchiveItems() {
       <div class="p-5 flex-grow flex flex-col justify-between space-y-4">
         <div>
           <span class="text-[11px] font-bold text-archive-600 dark:text-archive-400 block mb-1">${esc(item.code)} • ${esc(pick(item, 'date'))}</span>
-          <h3 class="text-base font-bold text-slate-900 dark:text-slate-100 leading-snug hover:text-archive-600 dark:hover:text-archive-400 transition-colors cursor-pointer" onclick="openModalById('${esc(item.id)}')">
+          <h3 dir="auto" class="text-base font-bold text-slate-900 dark:text-slate-100 leading-snug hover:text-archive-600 dark:hover:text-archive-400 transition-colors cursor-pointer" onclick="openModalById('${esc(item.id)}')">
             ${esc(title)}
           </h3>
-          <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mt-2 leading-relaxed">
+          <p dir="auto" class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mt-2 leading-relaxed">
             ${esc(pick(item, 'desc'))}
           </p>
         </div>
@@ -1303,7 +956,7 @@ function fillModal(item) {
   document.getElementById('modal-desc').textContent = pick(item, 'desc');
   document.getElementById('modal-img').src = item.image;
   document.getElementById('modal-transcription').textContent = item.transcription || t('no_transcription');
-  document.getElementById('modal-translation').textContent = item.translation || t('no_translation');
+  document.getElementById('modal-translation').innerHTML = translationHtml(item);
   document.getElementById('modal-notes').textContent = item.notes || t('no_notes');
   document.getElementById('modal-research').textContent = item.research || t('no_research');
 
@@ -1313,7 +966,7 @@ function fillModal(item) {
 }
 
 function openModalById(id) {
-  const item = archiveData.find(d => d.id === id);
+  const item = archiveData.find(d => String(d.id) === String(id));
   if (!item) return;
   currentModalId = id;
   fillModal(item);
@@ -1374,8 +1027,269 @@ function showToast(message) {
   }, 3000);
 }
 
+// ================= CMS: editable texts & images, dynamic timeline & figures =================
+let timelineData = FALLBACK_TIMELINE;
+let figuresData = FALLBACK_FIGURES;
+let siteTextRows = {};    // key -> { ar, en, fr, size }
+let siteImageRows = {};   // key -> { url, size, opacity }
+let currentFigureId = null;
+const CMS_CACHE_KEY = 'afas_cms_v1';
+const DEFAULT_IMAGES = {};
+const PERSON_PLACEHOLDER = 'data:image/svg+xml;utf8,' + encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><rect width="200" height="200" fill="#bf9053"/>' +
+  '<circle cx="100" cy="80" r="38" fill="#fff" opacity=".85"/><path d="M30 190c8-45 38-62 70-62s62 17 70 62z" fill="#fff" opacity=".85"/></svg>');
+
+// Text in the current language (falls back to Arabic, then any other language).
+function loc(obj) {
+  if (!obj) return '';
+  return obj[currentLang] || obj.ar || obj.en || obj.fr || '';
+}
+
+function applyTextSizes() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const row = siteTextRows[el.dataset.i18n];
+    const size = row ? Number(row.size) : 100;
+    el.style.zoom = (size > 0 && size !== 100) ? String(size / 100) : '';
+  });
+}
+
+// Texts edited from the admin panel override the defaults of translations.js.
+function applySiteTexts() {
+  ['ar', 'en', 'fr'].forEach(l => { I18N[l] = JSON.parse(JSON.stringify(I18N_DEFAULTS[l])); });
+  Object.keys(siteTextRows).forEach(key => {
+    const row = siteTextRows[key];
+    ['ar', 'en', 'fr'].forEach(l => {
+      const v = row[l];
+      if (typeof v === 'string' && v.trim() !== '') I18N[l][key] = v;
+    });
+  });
+  applyTranslations();
+  applyTextSizes();
+}
+
+function applySiteImages() {
+  const wide = document.getElementById('hero-flag-img');
+  const tall = document.getElementById('hero-flag-source');
+  const tile = document.getElementById('site-logo-tile');
+  if (!('wide' in DEFAULT_IMAGES)) {
+    DEFAULT_IMAGES.wide = wide ? wide.getAttribute('src') : '';
+    DEFAULT_IMAGES.tall = tall ? tall.getAttribute('srcset') : '';
+    DEFAULT_IMAGES.logo = tile ? tile.innerHTML : '';
+  }
+  const rw = siteImageRows.hero_flag_wide || {};
+  const rt = siteImageRows.hero_flag_tall || {};
+  const rl = siteImageRows.site_logo || {};
+  if (wide) wide.src = rw.url || DEFAULT_IMAGES.wide;
+  if (tall) tall.srcset = rt.url || DEFAULT_IMAGES.tall;
+  const root = document.documentElement.style;
+  const scale = Number(rw.size);
+  root.setProperty('--flag-scale', scale > 0 ? String(scale / 100) : '1');
+  if (rw.opacity !== null && rw.opacity !== undefined && rw.opacity !== '' && !isNaN(Number(rw.opacity))) {
+    root.setProperty('--flag-opacity', String(Number(rw.opacity) / 100));
+  } else {
+    root.removeProperty('--flag-opacity');
+  }
+  if (tile) {
+    if (rl.url) {
+      tile.innerHTML = '<img src="' + esc(rl.url) + '" alt="" class="w-full h-full object-contain rounded-xl">';
+      tile.style.background = 'transparent';
+      tile.style.boxShadow = 'none';
+    } else {
+      tile.innerHTML = DEFAULT_IMAGES.logo;
+      tile.style.background = '';
+      tile.style.boxShadow = '';
+    }
+    const ls = Number(rl.size);
+    tile.style.zoom = (ls > 0 && ls !== 100) ? String(ls / 100) : '';
+  }
+}
+
+function renderTimeline() {
+  const track = document.getElementById('timeline-track');
+  if (!track) return;
+  if (!timelineData.length) {
+    track.innerHTML = '<p class="pr-8 text-sm text-slate-400">' + esc(t('tl_empty')) + '</p>';
+    return;
+  }
+  track.innerHTML = timelineData.map(ev => {
+    const hasDoc = ev.docId && archiveData.some(d => String(d.id) === String(ev.docId));
+    const date = loc(ev.date);
+    return `
+      <div class="tl-item relative pr-8 group">
+        <div class="tl-dot absolute -right-[11px] top-1.5 w-5 h-5 rounded-full bg-archive-500 border-4 border-archive-50 dark:border-slate-950 shadow group-hover:scale-125 transition-transform duration-300"></div>
+        <div class="interactive-card p-6 rounded-2xl bg-white dark:bg-slate-900 border border-archive-200/60 dark:border-slate-800 shadow-sm">
+          ${date ? `<span class="inline-block px-3 py-1 text-xs font-bold bg-archive-100 dark:bg-slate-800 text-archive-700 dark:text-archive-300 rounded-lg mb-2">${esc(date)}</span>` : ''}
+          <h3 dir="auto" class="text-xl font-bold text-slate-900 dark:text-slate-100 mb-2">${esc(loc(ev.title))}</h3>
+          <p dir="auto" class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed ${hasDoc ? 'mb-4' : ''}">${esc(loc(ev.desc))}</p>
+          ${hasDoc ? `<button onclick="openModalById('${esc(ev.docId)}')" class="text-xs font-bold text-archive-600 dark:text-archive-400 hover:underline flex items-center gap-1">
+            <span>${esc(t('tl_view'))}</span>
+            <svg class="w-4 h-4 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+          </button>` : ''}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function renderFigures() {
+  const grid = document.getElementById('figures-grid');
+  if (!grid) return;
+  if (!figuresData.length) {
+    grid.innerHTML = '<p class="col-span-full text-center text-sm text-slate-400 py-8">' + esc(t('fig_empty')) + '</p>';
+    return;
+  }
+  grid.innerHTML = figuresData.map(f => `
+    <div class="interactive-card bg-white dark:bg-slate-900 rounded-2xl border border-archive-200/60 dark:border-slate-800 p-6 flex flex-col items-center text-center">
+      <div class="w-24 h-24 rounded-full bg-gradient-to-tr from-archive-400 to-archive-600 p-1 mb-4 shadow-md">
+        <img src="${esc(f.image || PERSON_PLACEHOLDER)}" alt="${esc(loc(f.name))}" class="w-full h-full object-cover rounded-full">
+      </div>
+      <h3 dir="auto" class="text-lg font-bold text-slate-900 dark:text-slate-100">${esc(loc(f.name))}</h3>
+      <span dir="auto" class="text-xs font-medium text-archive-600 dark:text-archive-400 mb-3">${esc(loc(f.role))}</span>
+      <p dir="auto" class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed mb-4">${esc(loc(f.desc))}</p>
+      <button onclick="openFigureModal('${esc(f.id)}')" class="mt-auto w-full py-2 bg-archive-100 dark:bg-slate-800 text-archive-800 dark:text-archive-300 font-semibold text-xs rounded-xl hover:bg-archive-200 dark:hover:bg-slate-700 transition-colors">${esc(t('p_btn'))}</button>
+    </div>`).join('');
+}
+
+// Biography + related documents of a historical figure.
+function fillFigureModal(f) {
+  document.getElementById('fig-modal-img').src = f.image || PERSON_PLACEHOLDER;
+  document.getElementById('fig-modal-name').textContent = loc(f.name);
+  document.getElementById('fig-modal-role').textContent = loc(f.role);
+  document.getElementById('fig-modal-bio').textContent = loc(f.bio) || loc(f.desc);
+  const related = (f.docIds || [])
+    .map(id => archiveData.find(d => String(d.id) === String(id)))
+    .filter(Boolean);
+  document.getElementById('fig-modal-docs').innerHTML = related.length
+    ? related.map(d => `
+      <button onclick="openDocFromFigure('${esc(d.id)}')" class="w-full flex items-center justify-between gap-3 text-start p-3 rounded-xl border border-archive-100 dark:border-slate-800 bg-archive-50/60 dark:bg-slate-800/40 hover:bg-archive-100 dark:hover:bg-slate-800 transition-colors">
+        <span class="min-w-0">
+          <span dir="auto" class="block text-sm font-bold text-slate-800 dark:text-slate-100 truncate">${esc(pick(d, 'title'))}</span>
+          <span class="block text-[11px] text-archive-600 dark:text-archive-400">${esc(d.code)} • ${esc(pick(d, 'date'))}</span>
+        </span>
+        <svg class="w-4 h-4 rotate-180 flex-shrink-0 text-archive-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+      </button>`).join('')
+    : '<p class="text-sm text-slate-400">' + esc(t('fig_no_related')) + '</p>';
+}
+
+function openFigureModal(id) {
+  const f = figuresData.find(x => String(x.id) === String(id));
+  if (!f) return;
+  currentFigureId = String(f.id);
+  fillFigureModal(f);
+  const modal = document.getElementById('fig-modal');
+  const content = document.getElementById('fig-modal-content');
+  modal.classList.remove('pointer-events-none', 'opacity-0');
+  modal.classList.add('opacity-100');
+  content.classList.remove('scale-95');
+  content.classList.add('scale-100');
+}
+
+function closeFigureModal() {
+  currentFigureId = null;
+  const modal = document.getElementById('fig-modal');
+  const content = document.getElementById('fig-modal-content');
+  if (!modal) return;
+  content.classList.remove('scale-100');
+  content.classList.add('scale-95');
+  modal.classList.remove('opacity-100');
+  modal.classList.add('opacity-0', 'pointer-events-none');
+}
+
+function openDocFromFigure(docId) {
+  closeFigureModal();
+  setTimeout(() => openModalById(docId), 180);
+}
+
+function refreshDynamicSections() {
+  renderTimeline();
+  renderFigures();
+  if (currentFigureId) {
+    const f = figuresData.find(x => String(x.id) === String(currentFigureId));
+    if (f) fillFigureModal(f);
+  }
+}
+
+// Translations of the document's translation tab (Arabic + English), current language first.
+function translationHtml(item) {
+  const entries = [
+    { lang: 'ar', text: item.translation },
+    { lang: 'en', text: item.translationEn }
+  ].filter(e => e.text);
+  entries.sort((a, b) => (b.lang === currentLang) - (a.lang === currentLang));
+  if (!entries.length) return '<p class="text-sm text-slate-400">' + esc(t('no_translation')) + '</p>';
+  return entries.map(e => `
+    <div>
+      <h5 class="text-xs font-bold text-archive-600 dark:text-archive-400 mb-1">${esc(t('lang_' + e.lang + '_name'))}</h5>
+      <p dir="auto" class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed whitespace-pre-line">${esc(e.text)}</p>
+    </div>`).join('');
+}
+
+function mapTimelineRow(r) {
+  return {
+    id: r.id,
+    date: { ar: r.date_ar, en: r.date_en, fr: r.date_fr },
+    title: { ar: r.title_ar, en: r.title_en, fr: r.title_fr },
+    desc: { ar: r.desc_ar, en: r.desc_en, fr: r.desc_fr },
+    docId: r.document_id
+  };
+}
+function mapFigureRow(r) {
+  return {
+    id: r.id,
+    name: { ar: r.name_ar, en: r.name_en, fr: r.name_fr },
+    role: { ar: r.role_ar, en: r.role_en, fr: r.role_fr },
+    desc: { ar: r.desc_ar, en: r.desc_en, fr: r.desc_fr },
+    bio: { ar: r.bio_ar, en: r.bio_en, fr: r.bio_fr },
+    image: r.image_url || '',
+    docIds: r.document_ids || []
+  };
+}
+
+function applyCmsPayload(p) {
+  if (p.texts) siteTextRows = p.texts;
+  if (p.images) siteImageRows = p.images;
+  if (p.timeline) timelineData = p.timeline;
+  if (p.figures) figuresData = p.figures;
+  applySiteTexts();
+  applySiteImages();
+  refreshDynamicSections();
+}
+
+// Show the last known CMS content instantly (no flash of default texts).
+function applyCachedCms() {
+  try {
+    const raw = localStorage.getItem(CMS_CACHE_KEY);
+    if (raw) applyCmsPayload(JSON.parse(raw));
+  } catch (e) { /* ignore */ }
+}
+
+// Fetch fresh content. Any table that is missing/unreachable is simply skipped.
+async function loadCmsData() {
+  if (!(window.AFAS && window.AFAS.client)) return;
+  const c = window.AFAS.client;
+  const safe = (q) => Promise.resolve(q).then(r => r, e => ({ data: null, error: e }));
+  const [tx, im, tl, fg] = await Promise.all([
+    safe(c.from('site_texts').select('*')),
+    safe(c.from('site_images').select('*')),
+    safe(c.from('timeline_events').select('*').eq('is_published', true).order('sort_order', { ascending: true })),
+    safe(c.from('figures').select('*').eq('is_published', true).order('sort_order', { ascending: true }))
+  ]);
+  const payload = {};
+  if (!tx.error && tx.data) payload.texts = Object.fromEntries(tx.data.map(r => [r.key, r]));
+  if (!im.error && im.data) payload.images = Object.fromEntries(im.data.map(r => [r.key, r]));
+  if (!tl.error && tl.data) payload.timeline = tl.data.map(mapTimelineRow);
+  if (!fg.error && fg.data) payload.figures = fg.data.map(mapFigureRow);
+  applyCmsPayload(payload);
+  try { localStorage.setItem(CMS_CACHE_KEY, JSON.stringify(payload)); } catch (e) { /* ignore */ }
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') { closeModal(); closeFigureModal(); }
+});
+
 window.onload = function () {
-  if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+  let savedTheme = null;
+  try { savedTheme = localStorage.getItem('theme'); } catch (e) {}
+  if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
     document.documentElement.classList.add('dark');
   }
 
@@ -1388,6 +1302,8 @@ window.onload = function () {
   // page blank while we wait on the network/database.
   archiveData = fallbackData;
   renderArchiveItems();
+  applyCachedCms();
+  refreshDynamicSections();
 
   // Then try to fetch the live list from the database in the
   // background (with its own timeout), and refresh the grid if it
@@ -1398,8 +1314,10 @@ window.onload = function () {
     new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), ms))
   ]);
   withTimeout(loadArchiveData(), 8000)
-    .then(() => renderArchiveItems())
+    .then(() => { renderArchiveItems(); refreshDynamicSections(); })
     .catch((e) => console.warn('تعذر تحديث الوثائق من قاعدة البيانات في الوقت المناسب:', e));
+  withTimeout(loadCmsData(), 8000)
+    .catch((e) => console.warn('تعذر تحميل محتوى الموقع المعدَّل:', e));
 }
 </script>
 </body>
