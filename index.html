@@ -1484,6 +1484,21 @@ window.onload = function () {
         showDebugBanner('DEBUG: loadArchiveData resolved OK. archiveData.length = ' + archiveData.length);
         renderArchiveItems();
         refreshDynamicSections();
+        const grid = document.getElementById('archive-grid');
+        showDebugBanner('DEBUG: grid element found = ' + (!!grid) + ', grid.children.length = ' + (grid ? grid.children.length : 'N/A') + ', currentCategory = ' + currentCategory);
+        if (grid && grid.children.length > 0) {
+          const first = grid.children[0];
+          const rect = first.getBoundingClientRect();
+          const cs = window.getComputedStyle(first);
+          showDebugBanner('DEBUG: first card computed opacity=' + cs.opacity + ' display=' + cs.display + ' visibility=' + cs.visibility + ' height=' + rect.height + ' width=' + rect.width);
+        }
+        const archView = document.getElementById('view-archive');
+        if (archView) {
+          const acs = window.getComputedStyle(archView);
+          showDebugBanner('DEBUG: view-archive display=' + acs.display + ' classes=' + archView.className);
+        } else {
+          showDebugBanner('DEBUG: view-archive element NOT FOUND');
+        }
         showDebugBanner('DEBUG: renderArchiveItems + refreshDynamicSections called after reload.');
       })
       .catch((e) => showDebugBanner('DEBUG ERROR in loadArchiveData chain: ' + (e && e.stack ? e.stack : e)));
