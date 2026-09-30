@@ -20,7 +20,10 @@ const AFAS = {
   },
 
   async signInWithGoogle() {
-    return _sb.auth.signInWithOAuth({ provider: "google" });
+    return _sb.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: "https://asmailansary.github.io/archive-platfrom/" }
+    });
   },
 
   async signOut() {
