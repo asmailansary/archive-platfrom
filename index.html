@@ -134,21 +134,13 @@ body {
   to   { opacity: 0; transform: translateY(-8px); }
 }
 /* Staggered reveal for cards / sections inside the active view */
-.view-section.active-view .stagger-item,
-#archive-grid > * {
+.view-section.active-view .stagger-item {
   animation: itemIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 @keyframes itemIn {
   from { opacity: 0; transform: translateY(20px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-#archive-grid > *:nth-child(1) { animation-delay: 0.05s; }
-#archive-grid > *:nth-child(2) { animation-delay: 0.10s; }
-#archive-grid > *:nth-child(3) { animation-delay: 0.15s; }
-#archive-grid > *:nth-child(4) { animation-delay: 0.20s; }
-#archive-grid > *:nth-child(5) { animation-delay: 0.25s; }
-#archive-grid > *:nth-child(6) { animation-delay: 0.30s; }
-#archive-grid > *:nth-child(n+7) { animation-delay: 0.35s; }
 /* Page load fade-in */
 body { animation: pageIn 0.6s ease both; }
 @keyframes pageIn { from { opacity: 0; } to { opacity: 1; } }
@@ -955,8 +947,7 @@ function renderArchiveItems() {
   filtered.forEach((item, index) => {
     const title = pick(item, 'title');
     const card = document.createElement('div');
-    card.className = 'interactive-card bg-white dark:bg-slate-900 rounded-2xl border border-archive-200/60 dark:border-slate-800 overflow-hidden shadow-sm flex flex-col opacity-0 transform translate-y-4';
-    card.style.animation = `fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) ${index * 0.08}s forwards`;
+    card.className = 'interactive-card bg-white dark:bg-slate-900 rounded-2xl border border-archive-200/60 dark:border-slate-800 overflow-hidden shadow-sm flex flex-col';
     card.innerHTML = `
       <div class="relative h-44 overflow-hidden bg-archive-100 dark:bg-slate-800">
         <img src="${esc(item.image)}" alt="${esc(title)}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
@@ -1437,76 +1428,39 @@ if (window.AFAS && window.AFAS.client) {
   });
 }
 
-function showDebugBanner(msg) {
-  let b = document.getElementById('debug-banner');
-  if (!b) {
-    b = document.createElement('div');
-    b.id = 'debug-banner';
-    b.style.cssText = 'position:relative;z-index:99999;background:#c00;color:#fff;padding:12px 40px 12px 12px;font-size:13px;white-space:pre-wrap;direction:ltr;text-align:left;max-height:40vh;overflow:auto;';
-    const closeBtn = document.createElement('button');
-    closeBtn.textContent = 'X';
-    closeBtn.style.cssText = 'position:absolute;top:8px;left:8px;background:#fff;color:#c00;border:none;border-radius:6px;width:28px;height:28px;font-weight:bold;font-size:14px;';
-    closeBtn.onclick = () => b.remove();
-    b.appendChild(closeBtn);
-    document.body.prepend(b);
-  }
-  const line = document.createElement('div');
-  line.textContent = msg;
-  line.style.marginBottom = '10px';
-  b.appendChild(line);
-}
 window.onload = function () {
-  try {
-    initAuthUI();
-    let savedTheme = null;
-    try { savedTheme = localStorage.getItem('theme'); } catch (e) {}
-    if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-      document.documentElement.classList.add('dark');
-    }
-
-    const firstTab = document.querySelector('.nav-btn[data-tab="hero"]');
-    if (firstTab) {
-      setTimeout(() => switchTab('hero', firstTab), 50);
-    }
-
-    archiveData = fallbackData;
-    renderArchiveItems();
-    applyCachedCms();
-    refreshDynamicSections();
-
-    const withTimeout = (promise, ms) => Promise.race([
-      promise,
-      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), ms))
-    ]);
-    showDebugBanner('DEBUG: starting loadArchiveData...');
-    withTimeout(loadArchiveData(), 8000)
-      .then(() => {
-        showDebugBanner('DEBUG: loadArchiveData resolved OK. archiveData.length = ' + archiveData.length);
-        renderArchiveItems();
-        refreshDynamicSections();
-        const grid = document.getElementById('archive-grid');
-        showDebugBanner('DEBUG: grid element found = ' + (!!grid) + ', grid.children.length = ' + (grid ? grid.children.length : 'N/A') + ', currentCategory = ' + currentCategory);
-        if (grid && grid.children.length > 0) {
-          const first = grid.children[0];
-          const rect = first.getBoundingClientRect();
-          const cs = window.getComputedStyle(first);
-          showDebugBanner('DEBUG: first card computed opacity=' + cs.opacity + ' display=' + cs.display + ' visibility=' + cs.visibility + ' height=' + rect.height + ' width=' + rect.width);
-        }
-        const archView = document.getElementById('view-archive');
-        if (archView) {
-          const acs = window.getComputedStyle(archView);
-          showDebugBanner('DEBUG: view-archive display=' + acs.display + ' classes=' + archView.className);
-        } else {
-          showDebugBanner('DEBUG: view-archive element NOT FOUND');
-        }
-        showDebugBanner('DEBUG: renderArchiveItems + refreshDynamicSections called after reload.');
-      })
-      .catch((e) => showDebugBanner('DEBUG ERROR in loadArchiveData chain: ' + (e && e.stack ? e.stack : e)));
-    withTimeout(loadCmsData(), 8000)
-      .catch((e) => showDebugBanner('DEBUG ERROR in loadCmsData: ' + (e && e.stack ? e.stack : e)));
-  } catch (e) {
-    showDebugBanner('DEBUG FATAL ERROR in window.onload: ' + (e && e.stack ? e.stack : e));
+  initAuthUI();
+  let savedTheme = null;
+  try { savedTheme = localStorage.getItem('theme'); } catch (e) {}
+  if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    document.documentElement.classList.add('dark');
   }
+
+  const firstTab = document.querySelector('.nav-btn[data-tab="hero"]');
+  if (firstTab) {
+    setTimeout(() => switchTab('hero', firstTab), 50);
+  }
+
+  // Show the local baseline documents immediately — never leave the
+  // page blank while we wait on the network/database.
+  archiveData = fallbackData;
+  renderArchiveItems();
+  applyCachedCms();
+  refreshDynamicSections();
+
+  // Then try to fetch the live list from the database in the
+  // background (with its own timeout), and refresh the grid if it
+  // succeeds. If it fails, is slow, or hangs, the baseline above
+  // is still shown, so the visitor is never left with a blank page.
+  const withTimeout = (promise, ms) => Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), ms))
+  ]);
+  withTimeout(loadArchiveData(), 8000)
+    .then(() => { renderArchiveItems(); refreshDynamicSections(); })
+    .catch((e) => console.warn('تعذر تحديث الوثائق من قاعدة البيانات في الوقت المناسب:', e));
+  withTimeout(loadCmsData(), 8000)
+    .catch((e) => console.warn('تعذر تحميل محتوى الموقع المعدَّل:', e));
 }
 </script>
 </body>
